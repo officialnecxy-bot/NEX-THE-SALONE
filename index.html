@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NEX | THE SALON</title>
+    <title>THE NEX | THE SALON</title>
     
+    <!-- PWA Manifest (unchanged) -->
+    <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIk5FWCBTYWxvbiIsCiAgInNob3J0X25hbWUiOiAiTkVYIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwMzAzMDMiLAogICJ0aGVtZV9jb2xvciI6ICIjRkYwMDJFIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pLmliYi5jby9RdnZ3Y2ZWL2ltZy5wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Manrope:wght@300;400;600;800&family=Oswald:wght@700&display=swap" rel="stylesheet">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
-    <!-- Firebase SDK (v9 modular) -->
+    <!-- Firebase Realtime Database (compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
     <!-- EmailJS SDK -->
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
@@ -46,13 +49,13 @@
     </script>
 
     <style>
+        /* ALL EXISTING STYLES EXACTLY AS BEFORE – plus new toggle styles */
         body {
             background-color: #030303;
             color: white;
             font-family: 'Manrope', sans-serif;
             overflow-x: hidden;
         }
-
         .bg-noise {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -61,8 +64,6 @@
             pointer-events: none;
             z-index: 0;
         }
-
-        /* New background image layer */
         .bg-dim-image {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -74,7 +75,6 @@
             pointer-events: none;
             z-index: 0;
         }
-
         .bento-card {
             background: rgba(20, 20, 20, 0.4);
             backdrop-filter: blur(20px);
@@ -87,7 +87,6 @@
             box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
             overflow: hidden;
         }
-
         .bento-card::after {
             content: '';
             position: absolute;
@@ -98,25 +97,21 @@
             pointer-events: none;
         }
         .bento-card:hover::after { opacity: 1; }
-
         .bento-card:hover {
             border-color: rgba(255, 255, 255, 0.1);
             transform: translateY(-5px);
             box-shadow: 0 20px 40px -10px rgba(255, 0, 46, 0.1);
         }
-
         .text-gradient-gold {
             background: linear-gradient(to bottom, #ffffff 0%, #a1a1a1 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
         .text-gradient-red {
             background: linear-gradient(135deg, #FF002E 0%, #FF4D6D 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-
         .btn-shine {
             position: relative;
             overflow: hidden;
@@ -132,10 +127,8 @@
         .btn-shine:hover::before {
             left: 100%;
         }
-
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
         .click-ripple {
             position: absolute;
             pointer-events: none;
@@ -173,8 +166,6 @@
             40% { width: 12px; height: 12px; opacity: 0.9; }
             100% { width: 0; height: 0; opacity: 0; }
         }
-
-        /* Mobile menu */
         #mobile-menu {
             transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1);
             transform: translateY(-100%);
@@ -183,7 +174,6 @@
             -webkit-backdrop-filter: blur(20px);
         }
         #mobile-menu.open { transform: translateY(0); }
-        
         .menu-link {
             position: relative;
             display: inline-block;
@@ -213,8 +203,6 @@
         .menu-link:hover::before {
             width: 100%;
         }
-
-        /* Custom dropdown styles (for service, time, and date) */
         .custom-select {
             position: relative;
             width: 100%;
@@ -322,8 +310,6 @@
         .hidden-select {
             display: none;
         }
-        
-        /* Custom calendar styles */
         .calendar-header {
             display: flex;
             justify-content: space-between;
@@ -378,6 +364,7 @@
         .day-cell {
             aspect-ratio: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             font-size: 0.9rem;
@@ -386,6 +373,7 @@
             cursor: pointer;
             transition: all 0.2s;
             background: rgba(255,255,255,0.02);
+            position: relative;
         }
         .day-cell:hover:not(.empty):not(.disabled) {
             background: rgba(255,0,46,0.3);
@@ -405,7 +393,29 @@
         .day-cell.today {
             border: 1px solid #FF002E;
         }
-        
+        .day-cell .availability-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            margin-top: 2px;
+        }
+        .day-cell.available .availability-dot {
+            background: #10b981;
+        }
+        .day-cell.unavailable .availability-dot {
+            background: #ef4444;
+        }
+        .skeleton-calendar {
+            background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+            border-radius: 0.5rem;
+            min-height: 300px;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
         .input-error {
             border-color: #FF002E !important;
             animation: shake 0.3s ease-in-out;
@@ -415,7 +425,6 @@
             25% { transform: translateX(-5px); }
             75% { transform: translateX(5px); }
         }
-        
         input, textarea {
             background: rgba(255,255,255,0.03) !important;
             border: 1px solid rgba(255,255,255,0.1) !important;
@@ -427,14 +436,11 @@
             border-color: #FF002E !important;
             box-shadow: 0 0 20px rgba(255, 0, 46, 0.1);
         }
-
-        /* Dimmed placeholders for date/time */
         input::placeholder, textarea::placeholder {
             color: rgba(255,255,255,0.25) !important;
             font-weight: 300;
             letter-spacing: 0.05em;
         }
-
         @keyframes pulse-glow {
             0%, 100% { box-shadow: 0 0 20px rgba(255, 0, 46, 0.3); }
             50% { box-shadow: 0 0 40px rgba(255, 0, 46, 0.6); }
@@ -459,8 +465,6 @@
             border-color: #FF002E;
             box-shadow: 0 15px 30px -10px rgba(255, 0, 46, 0.3);
         }
-
-        /* Premium Toast styling */
         #toast-container {
             position: fixed;
             top: 100px;
@@ -494,8 +498,6 @@
         .toast i { font-size: 1.5rem; color: #FF002E; }
         .toast.success i { color: #10b981; }
         .toast.success { border-left-color: #10b981; }
-
-        /* Ticket modal */
         #ticket-content {
             background: linear-gradient(145deg, #0f0f0f 0%, #1a1a1a 100%);
             border-radius: 2rem;
@@ -523,17 +525,11 @@
             color: black;
             box-shadow: 0 0 30px #FF002E;
         }
-        
-        /* Skeleton loading */
         .skeleton {
             background: linear-gradient(90deg, #1a1a1a 25%, #2a2a2a 50%, #1a1a1a 75%);
             background-size: 200% 100%;
             animation: skeleton-loading 1.5s infinite;
             border-radius: 0.5rem;
-        }
-        @keyframes skeleton-loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
         }
         .time-skeleton {
             height: 3rem;
@@ -543,12 +539,51 @@
         .hidden {
             display: none;
         }
+        /* New toggle switch styles */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #4b5563;
+            transition: .3s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #FF002E;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
     </style>
 </head>
 <body class="antialiased pb-20 selection:bg-brand-red selection:text-white">
 
     <div class="bg-noise"></div>
-    <!-- New dim background image -->
     <div class="bg-dim-image"></div>
     
     <div class="fixed top-0 left-0 w-[500px] h-[500px] bg-brand-red/10 rounded-full blur-[128px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0"></div>
@@ -557,14 +592,14 @@
     <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
 
-    <!-- NAVBAR with larger logo and added VOX title -->
+    <!-- NAVBAR (logo updated) -->
     <div class="fixed top-6 left-0 right-0 z-50 px-4 flex justify-center" data-aos="fade-down" data-aos-duration="1000">
         <nav class="bg-black/60 backdrop-blur-2xl border border-white/5 rounded-full px-8 py-3 flex items-center justify-between shadow-2xl w-full max-w-7xl">
-            <!-- Logo section: bigger image + VOX text + tagline -->
             <a href="#" class="flex flex-col items-start select-none group">
                 <div class="flex items-center gap-3">
-                    <img src="https://i.ibb.co/QvGPqxp5/img.png" alt="NEX Logo" class="h-12 w-auto object-contain"> <!-- increased from h-10 to h-12 -->
-                    <span class="text-3xl md:text-4xl font-heading text-white group-hover:text-brand-red transition-colors">VOX</span>
+                    <!-- NEW LOGO URL -->
+                    <img src="https://i.ibb.co/1pHWzNN/img.png" alt="NEX Logo" class="h-12 w-auto object-contain">
+                    <span class="text-3xl md:text-4xl font-heading text-white group-hover:text-brand-red transition-colors">THE NEX</span>
                 </div>
                 <span class="text-[0.6rem] font-bold text-brand-red tracking-[0.38em] uppercase pl-0.5 group-hover:text-white transition-colors duration-300">WHERE STYLE MEETS EDGE</span>
             </a>
@@ -586,7 +621,7 @@
         </nav>
     </div>
 
-    <!-- UPGRADED MOBILE MENU (interior only) -->
+    <!-- MOBILE MENU (unchanged) -->
     <div id="mobile-menu" class="fixed inset-0 z-[40] flex flex-col justify-center items-center gap-8 p-8">
         <button onclick="toggleMenu()" class="absolute top-10 right-8 text-4xl text-gray-500 hover:text-white transition-colors w-14 h-14 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center hover:bg-brand-red/30"><i class="fa-solid fa-xmark"></i></button>
         
@@ -615,10 +650,12 @@
             <a href="https://instagram.com/imvilliambutcher" target="_blank" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150"><i class="fa-brands fa-instagram"></i></a>
             <a href="https://wa.me/917057193228" target="_blank" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150"><i class="fa-brands fa-whatsapp"></i></a>
             <a href="https://t.me/i_necxy" target="_blank" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150"><i class="fa-brands fa-telegram"></i></a>
+            <!-- Direct call icon added -->
+            <a href="tel:7057193228" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150"><i class="fa-solid fa-phone"></i></a>
         </div>
     </div>
 
-    <!-- PROFILE POPUP -->
+    <!-- PROFILE POPUP (unchanged) -->
     <div id="profile-popup" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-xl hidden flex justify-center items-center opacity-0 transition-opacity duration-300">
         <div class="bento-card p-8 w-[90%] max-w-md relative transform scale-90 transition-transform duration-300 border-white/10 max-h-[90vh] overflow-y-auto" id="profile-card">
             <button onclick="toggleProfile()" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl transition-colors"><i class="fa-solid fa-xmark"></i></button>
@@ -628,9 +665,9 @@
                 </div>
                 <h3 class="text-4xl font-heading text-white mb-2">SHANTANU JAGDALE</h3>
                 <p class="text-brand-red text-xs font-bold uppercase tracking-[0.3em] mb-6">Master Barber</p>
-                <div class="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10 text-left">
+                <div class="bg-white/5 rounded-2xl p-5 mb-5 border border-white/10 text-left" id="profile-hours">
                     <h4 class="text-sm font-heading text-white mb-3 flex items-center gap-2"><i class="fa-regular fa-clock text-brand-red"></i> OPENING HOURS</h4>
-                    <ul class="space-y-2 text-xs text-gray-300">
+                    <ul class="space-y-2 text-xs text-gray-300" id="hours-list">
                         <li class="flex justify-between"><span>Tuesday-Saturday</span> <span class="font-bold text-white">9:00 AM – 9:00 PM</span></li>
                         <li class="flex justify-between"><span>Sunday</span> <span class="font-bold text-white">9:00 AM – 10:00 PM</span></li>
                         <li class="flex justify-between text-brand-red"><span>Monday</span> <span class="font-bold">CLOSED</span></li>
@@ -656,7 +693,7 @@
         </div>
     </div>
 
-    <!-- SERVICE MODAL -->
+    <!-- SERVICE MODAL (unchanged) -->
     <div id="service-modal" class="fixed inset-0 z-[150] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-md opacity-0 transition-opacity duration-300">
         <div class="bento-card w-full max-w-lg p-10 relative transform scale-90 transition-transform duration-300 flex flex-col items-center text-center border transition-colors duration-500" id="service-modal-card">
             <button onclick="closeServiceModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -669,7 +706,7 @@
         </div>
     </div>
     
-    <!-- MESSAGE SUCCESS MODAL (unused but kept) -->
+    <!-- MESSAGE SUCCESS MODAL (unchanged) -->
     <div id="success-modal" class="fixed inset-0 z-[300] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-md opacity-0 transition-opacity duration-300">
         <div class="bento-card w-full max-w-sm p-10 relative transform scale-90 transition-transform duration-300 flex flex-col items-center text-center border-green-500/30 shadow-[0_0_60px_rgba(34,197,94,0.2)]" id="success-modal-card">
             <div class="w-24 h-24 rounded-full bg-green-500/10 flex items-center justify-center mb-6 text-green-500 border border-green-500/30 animate-pulse"><i class="fa-solid fa-check text-5xl"></i></div>
@@ -679,7 +716,7 @@
         </div>
     </div>
 
-    <!-- PLAN DETAIL MODAL -->
+    <!-- PLAN DETAIL MODAL (unchanged) -->
     <div id="plan-modal" class="fixed inset-0 z-[250] bg-black/95 hidden flex items-center justify-center p-4 backdrop-blur-md opacity-0 transition-opacity duration-300">
         <div class="bento-card w-full max-w-md p-8 relative transform scale-90 transition-transform duration-300 flex flex-col border border-white/10 shadow-2xl" id="plan-modal-card">
             <button onclick="closePlanModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -690,7 +727,7 @@
         </div>
     </div>
 
-    <!-- TICKET MODAL -->
+    <!-- TICKET MODAL (unchanged) -->
     <div id="ticket-modal" class="fixed inset-0 z-[400] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-md opacity-0 transition-opacity duration-300">
         <div class="bento-card w-full max-w-lg p-6 relative transform scale-90 transition-transform duration-300 border border-yellow-500/30 shadow-[0_0_80px_rgba(255,0,46,0.3)]" id="ticket-modal-card">
             <button onclick="closeTicketModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
@@ -698,7 +735,6 @@
                 <h3 class="text-3xl font-heading text-white tracking-wider">NEX SALON</h3>
                 <p class="text-[10px] text-brand-red tracking-[0.4em]">BOOKING CONFIRMATION</p>
             </div>
-            <!-- Ticket content that will be captured for image -->
             <div id="ticket-content" class="relative">
                 <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-brand-red rounded-full"></div>
                 <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
@@ -726,7 +762,25 @@
         </div>
     </div>
 
-    <!-- HERO SECTION -->
+    <!-- PRIVACY POLICY MODAL (unchanged) -->
+    <div id="privacy-modal" class="fixed inset-0 z-[500] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="bento-card w-full max-w-2xl p-8 relative transform scale-90 transition-transform duration-300 border border-white/10" id="privacy-modal-card">
+            <button onclick="closePrivacyModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h2 class="text-4xl font-heading text-center text-white mb-6">PRIVACY POLICY</h2>
+            <div class="space-y-4 text-gray-300 text-sm leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
+                <p>Your privacy is important to us. This policy explains how we collect, use, and protect your personal information when you book an appointment at NEX Salon.</p>
+                <p><strong>Information We Collect:</strong> Name, phone number, email address, appointment details, and any additional notes you provide.</p>
+                <p><strong>How We Use Your Information:</strong> To confirm appointments, send reminders, improve our services, and communicate with you. We do not share your data with third parties except as necessary to provide our services (e.g., email delivery via EmailJS).</p>
+                <p><strong>Data Security:</strong> We use Firebase Realtime Database with secure rules. However, no method of transmission over the Internet is 100% secure.</p>
+                <p><strong>Your Rights:</strong> You may request access to or deletion of your personal data by contacting us at 7057193228.</p>
+                <p>By using our website, you consent to this privacy policy. We may update this policy from time to time.</p>
+                <p class="text-xs text-gray-500 mt-6">Last updated: April 2025</p>
+            </div>
+            <button onclick="closePrivacyModal()" class="w-full mt-6 bg-brand-red text-white font-heading text-xl py-3 rounded-xl hover:bg-white hover:text-black transition-all btn-shine">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- HERO SECTION (smaller button, updated icons) -->
     <section class="pt-32 px-4 max-w-[1600px] mx-auto mb-10">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-8 bento-card p-10 md:p-20 flex flex-col justify-center min-h-[550px] relative overflow-hidden group border-white/10" data-aos="fade-right" data-aos-duration="1000">
@@ -735,7 +789,7 @@
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-brand-red/20 mix-blend-multiply"></div>
                     <div class="absolute top-4 left-4 flex items-center gap-2 opacity-50">
                         <div class="w-3 h-3 rounded-full bg-brand-red animate-pulse box-shadow-[0_0_10px_red]"></div>
-                        <p class="text-[10px] font-mono uppercase text-brand-red tracking-widest">मंगळ–शनि 9AM–9PM | रवि 9AM–10PM | सोम बंद</p>
+                        <p class="text-[10px] font-mono uppercase text-brand-red tracking-widest" id="hero-hours">मंगळ–शनि 9AM–9PM | रवि 9AM–10PM | सोम बंद</p>
                     </div>
                 </div>
                 
@@ -756,9 +810,12 @@
                     <p class="text-gray-300 max-w-lg text-lg leading-relaxed mb-10 drop-shadow-lg font-medium tracking-wide" data-aos="fade-up" data-aos-delay="400">Expert cuts, beard sculpting & color by <span class="text-white font-bold">Shantanu Jagdale</span>. Experience the art of grooming.</p>
                     
                     <div class="flex flex-wrap items-center gap-4" data-aos="fade-up" data-aos-delay="600">
-                        <a href="#pricing" class="bg-white text-black font-heading text-xl px-10 py-4 rounded-full hover:bg-brand-red hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,0,46,0.4)] btn-shine">View Services</a>
+                        <!-- Smaller "View Services" button -->
+                        <a href="#pricing" class="bg-white text-black font-heading text-lg px-8 py-3 rounded-full hover:bg-brand-red hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,0,46,0.4)] btn-shine">View Services</a>
+                        <!-- New icons: call, instagram, whatsapp (telegram removed) -->
+                        <a href="tel:7057193228" class="text-white/50 hover:text-brand-red text-3xl transition-all hover-rotate"><i class="fa-solid fa-phone"></i></a>
                         <a href="https://instagram.com/imvilliambutcher" target="_blank" class="text-white/50 hover:text-brand-red text-3xl transition-all hover-rotate"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="https://t.me/i_necxy" target="_blank" class="text-white/50 hover:text-brand-red text-3xl transition-all hover-rotate"><i class="fa-brands fa-telegram"></i></a>
+                        <a href="https://wa.me/917057193228" target="_blank" class="text-white/50 hover:text-brand-red text-3xl transition-all hover-rotate"><i class="fa-brands fa-whatsapp"></i></a>
                     </div>
                 </div>
             </div>
@@ -775,7 +832,7 @@
         </div>
     </section>
 
-    <!-- SERVICES SECTION -->
+    <!-- SERVICES SECTION (unchanged – icons already good) -->
     <section id="services" class="px-4 max-w-[1600px] mx-auto mb-20">
         <h2 class="text-center text-5xl font-heading mb-16 text-gradient-gold" data-aos="zoom-in">OUR <span class="text-gradient-red">SIGNATURE</span></h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -802,7 +859,7 @@
         </div>
     </section>
 
-    <!-- PRICING SECTION -->
+    <!-- PRICING SECTION – DYNAMIC (combo offers from admin) -->
     <section id="pricing" class="px-4 max-w-[1600px] mx-auto mb-20">
         <div class="text-center mb-12">
             <h2 class="text-5xl font-heading mb-4 text-gradient-gold" data-aos="zoom-in">PRICE <span class="text-gradient-red">LIST</span></h2>
@@ -812,63 +869,49 @@
             </div>
         </div>
 
-        <div id="pricing-monthly" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 px-4 pb-12">
-            <!-- Cards (unchanged) ... -->
-            <div onclick="openPlanModal('classic')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="0"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-cut text-brand-red text-xl"></i><h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">CLASSIC CUT</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹399</h2><div class="h-px bg-white/10 w-full my-3"></div><ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider"><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Haircut & Styling</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Neck Shave</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> 45 Mins</li></ul></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('skinFade')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="50"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-bolt text-brand-red text-xl"></i><h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">SKIN FADE</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹499</h2><div class="h-px bg-white/10 w-full my-3"></div><ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider"><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Premium Fade</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Line-up</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Styling</li></ul></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('beard')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="100"><div><div class="flex items-center gap-2 mb-2"><i class="fa-regular fa-face-smile text-brand-red text-xl"></i><h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">BEARD SCULPT</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹299</h2><div class="h-px bg-white/10 w-full my-3"></div><ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider"><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Hot Towel</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Precision Trim</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Beard Oil</li></ul></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('color')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="150"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-droplet text-brand-red text-xl"></i><h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">HAIR COLOR</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹999+</h2><div class="h-px bg-white/10 w-full my-3"></div><ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider"><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Premium Dyes</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Grey Coverage</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Styling Incl.</li></ul></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('hairSpa')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="200"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-spa text-brand-red text-xl"></i><h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">HAIR SPA</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹799</h2><div class="h-px bg-white/10 w-full my-3"></div><ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider"><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Deep Condition</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Head Massage</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Steam</li></ul></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('facial')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="250"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-mask text-brand-red text-xl"></i><h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">CHARCOAL FACIAL</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹699</h2><div class="h-px bg-white/10 w-full my-3"></div><ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider"><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Deep Cleansing</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Charcoal Mask</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Massage</li></ul></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('headMassage')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="300"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-hand-sparkles text-brand-red text-xl"></i><h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">HEAD MASSAGE</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹399</h2><div class="h-px bg-white/10 w-full my-3"></div><ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider"><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Oil Massage</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Hot Towel Neck</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> 30 Mins</li></ul></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('mustache')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="350"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-mustache text-brand-red text-xl"></i><h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">MUSTACHE GROOM</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹199</h2><div class="h-px bg-white/10 w-full my-3"></div><ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider"><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Trim & Shape</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Waxing (opt.)</li></ul></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('pompadour')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="400"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-crown text-brand-red text-xl"></i><h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">POMPADOUR STYLE</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹449</h2><div class="h-px bg-white/10 w-full my-3"></div><ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider"><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Volume & Hold</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Premium Product</li></ul></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('greyBlend')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="450"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-blender-phone text-brand-red text-xl"></i><h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">GREY BLENDING</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹1199</h2><div class="h-px bg-white/10 w-full my-3"></div><ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider"><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Camouflage</li><li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> Natural Look</li></ul></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-        </div>
+        <!-- Men's grooming (non‑combo services) -->
+        <div id="pricing-monthly" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 px-4 pb-12"></div>
 
-        <div id="pricing-onetime" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 px-4 pb-12">
-            <!-- combo cards unchanged ... -->
-            <div onclick="openPlanModal('combo1')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="0"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-scissors text-brand-red text-xl"></i><h3 class="text-lg font-heading text-gray-400 group-hover:text-white transition-colors">HAIRCUT + BEARD</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹599</h2><div class="h-px bg-white/10 w-full my-3"></div><p class="text-gray-400 text-[10px] leading-relaxed">Complete grooming package.</p></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('combo2')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 bg-white/5 relative group pricing-card" data-aos="fade-up" data-aos-delay="50"><div class="absolute top-0 left-1/2 -translate-x-1/2 bg-brand-red text-white text-[8px] font-bold uppercase px-2 py-0.5 rounded-b-lg tracking-widest">VALUE</div><div class="mt-4"><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-paintbrush text-brand-red text-xl"></i><h3 class="text-lg font-heading text-white">COLOR + CUT</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹1499</h2><div class="h-px bg-brand-red/30 w-full my-3"></div><p class="text-gray-300 text-[10px] leading-relaxed">Full color with precision cut.</p></div><div class="mt-3 text-center text-[8px] text-white font-bold uppercase tracking-[0.2em]">Tap for Details</div></div>
-            <div onclick="openPlanModal('combo3')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="100"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-crown text-brand-red text-xl"></i><h3 class="text-lg font-heading text-gray-400 group-hover:text-white transition-colors">ROYAL PACKAGE</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹2499</h2><div class="h-px bg-white/10 w-full my-3"></div><p class="text-gray-400 text-[10px] leading-relaxed">Haircut + Beard + Facial + Spa.</p></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('combo4')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="150"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-spa text-brand-red text-xl"></i><h3 class="text-lg font-heading text-gray-400 group-hover:text-white transition-colors">HAIR SPA + CUT</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹1199</h2><div class="h-px bg-white/10 w-full my-3"></div><p class="text-gray-400 text-[10px] leading-relaxed">Spa treatment + haircut.</p></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-            <div onclick="openPlanModal('combo5')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up" data-aos-delay="200"><div><div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-face-smile text-brand-red text-xl"></i><h3 class="text-lg font-heading text-gray-400 group-hover:text-white transition-colors">FACIAL + BEARD</h3></div><h2 class="text-3xl font-heading mt-2 text-white">₹899</h2><div class="h-px bg-white/10 w-full my-3"></div><p class="text-gray-400 text-[10px] leading-relaxed">Charcoal facial & beard sculpt.</p></div><div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div></div>
-        </div>
+        <!-- Combo offers (from admin) -->
+        <div id="pricing-onetime" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 px-4 pb-12"></div>
     </section>
 
-    <!-- SOCIAL MEDIA STRIP -->
+    <!-- SOCIAL MEDIA STRIP (unchanged) -->
     <div class="flex justify-center gap-6 mb-10" data-aos="fade-up">
         <a href="https://instagram.com/imvilliambutcher" target="_blank" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 hover:text-white transition-all border border-white/10 hover:border-transparent social-icon"><i class="fa-brands fa-instagram"></i></a>
         <a href="https://wa.me/917057193228" target="_blank" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-[#25D366] hover:text-white transition-all border border-white/10 hover:border-transparent social-icon"><i class="fa-brands fa-whatsapp"></i></a>
         <a href="https://t.me/i_necxy" target="_blank" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-[#0088cc] hover:text-white transition-all border border-white/10 hover:border-transparent social-icon"><i class="fa-brands fa-telegram"></i></a>
+        <!-- Direct call icon added -->
+        <a href="tel:7057193228" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-brand-red hover:text-white transition-all border border-white/10 hover:border-transparent social-icon"><i class="fa-solid fa-phone"></i></a>
     </div>
 
-    <!-- CONTACT FORM with fully custom date, service, and time dropdowns -->
+    <!-- CONTACT FORM – with coupon toggle, waitlist toggle, etc. -->
     <section id="contact" class="px-4 max-w-4xl mx-auto mb-20" data-aos="zoom-in-up" data-aos-duration="1000">
         <div class="bento-card p-10 md:p-20 relative overflow-hidden border border-white/10">
             <div class="absolute top-0 right-0 w-64 h-64 bg-brand-red/20 rounded-full blur-[100px]"></div>
             <h2 class="text-6xl font-heading text-center mb-12 relative z-10 text-gradient-gold">BOOK <span class="text-gradient-red">SLOT</span></h2>
             
             <div id="availability-msg" class="text-center text-sm text-brand-red mb-4 hidden"></div>
+            <div id="waitlist-msg" class="text-center text-sm text-green-500 mb-4 hidden"></div>
 
             <form id="contact-form" class="space-y-8 relative z-10">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div>
                         <input type="text" id="c-name" placeholder="YOUR NAME" class="w-full bg-black/40 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-brand-red transition-all font-bold tracking-wider text-sm placeholder-gray-600">
-                        <p id="name-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Name is required</p>
+                        <p id="name-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Please enter your full name</p>
                     </div>
                     <div>
                         <input type="text" id="c-phone" placeholder="PHONE / WHATSAPP" class="w-full bg-black/40 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-brand-red transition-all font-bold tracking-wider text-sm placeholder-gray-600">
-                        <p id="phone-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Valid 10-digit number</p>
+                        <p id="phone-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Valid 10-digit number required</p>
                     </div>
                 </div>
 
                 <div>
                     <input type="email" id="c-email" placeholder="YOUR EMAIL (FOR CONFIRMATION)" class="w-full bg-black/40 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-brand-red transition-all font-bold tracking-wider text-sm placeholder-gray-600">
-                    <p id="email-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Valid email required</p>
+                    <p id="email-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Please enter a valid email address</p>
                 </div>
 
-                <!-- Custom Searchable Service Dropdown -->
+                <!-- Custom Searchable Service Dropdown (populated from DB) -->
                 <div class="custom-select" id="custom-service-select">
                     <div class="select-selected" id="select-selected">
                         <span id="selected-text">SELECT SERVICE</span>
@@ -887,7 +930,7 @@
                 <p id="service-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Please select a service</p>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Custom Date Picker -->
+                    <!-- Custom Date Picker (unchanged) -->
                     <div class="custom-select" id="custom-date-select">
                         <div class="select-selected" id="date-selected">
                             <span id="date-selected-text">SELECT DATE</span>
@@ -905,12 +948,13 @@
                                 <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
                             </div>
                             <div class="days-grid" id="days-grid"></div>
+                            <div id="calendar-skeleton" class="skeleton-calendar hidden"></div>
                         </div>
                         <input type="hidden" id="c-date" name="date">
                     </div>
-                    <p id="date-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Select a valid date</p>
+                    <p id="date-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Please select a date</p>
 
-                    <!-- Custom Time Dropdown -->
+                    <!-- Custom Time Dropdown (with dynamic positioning) -->
                     <div class="custom-select" id="custom-time-select">
                         <div class="select-selected" id="time-selected">
                             <span id="time-selected-text">SELECT TIME</span>
@@ -926,11 +970,33 @@
                             <div class="skeleton time-skeleton"></div>
                         </div>
                     </div>
-                    <p id="time-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Time is required</p>
+                    <p id="time-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Please select a time</p>
+                </div>
+
+                <!-- Waitlist Toggle (replaced checkbox) -->
+                <div class="flex items-center gap-3">
+                    <label class="switch">
+                        <input type="checkbox" id="waitlist-checkbox">
+                        <span class="slider"></span>
+                    </label>
+                    <span class="text-sm text-gray-300">If my slot is not available, add me to the waitlist</span>
                 </div>
 
                 <div>
                     <textarea id="c-msg" rows="3" placeholder="ADDITIONAL NOTES (OPTIONAL)" class="w-full bg-black/40 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-brand-red transition-all font-bold tracking-wider text-sm placeholder-gray-600"></textarea>
+                </div>
+
+                <!-- COUPON CODE TOGGLE (hidden by default) -->
+                <div class="text-right">
+                    <button type="button" id="toggle-coupon" class="text-sm text-brand-red underline">I have a coupon code</button>
+                </div>
+                <div id="coupon-section" class="hidden space-y-2">
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="coupon-code" placeholder="COUPON CODE" class="flex-1 bg-black/40 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-brand-red transition-all font-bold tracking-wider text-sm placeholder-gray-600">
+                        <button type="button" id="apply-coupon" class="bg-brand-red text-white px-6 py-4 rounded-2xl text-sm font-bold uppercase tracking-wider hover:bg-red-700 transition-all">APPLY</button>
+                    </div>
+                    <div id="discount-info" class="text-sm text-green-500 mt-1 hidden"></div>
+                    <div id="total-price" class="text-xl font-bold text-white text-right mt-2">Total: ₹<span id="total-amount">0</span></div>
                 </div>
 
                 <button type="submit" id="booking-submit-btn" class="w-full bg-white text-black font-heading text-2xl py-5 rounded-2xl hover:bg-brand-red hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] btn-shine flex items-center justify-center gap-3">
@@ -947,51 +1013,1021 @@
             <h1 class="text-[15vw] font-heading text-white/5 leading-none select-none tracking-widest">NEX</h1>
             <div class="-mt-6 md:-mt-16 relative z-10">
                 <p class="text-2xl md:text-3xl font-heading text-white mb-4 tracking-wide">THE ART OF <span class="text-gradient-red">GROOMING</span></p>
-                <p class="text-gray-500 text-xs md:text-sm max-w-lg mx-auto leading-relaxed tracking-wider font-light mb-4">
+                <p class="text-gray-500 text-xs md:text-sm max-w-lg mx-auto leading-relaxed tracking-wider font-light mb-4" id="footer-contact">
                     Shantanu Jagdale | 7057193228<br>Barshi Naka, Dharashiv, 413501
                 </p>
                 <div class="flex justify-center gap-4 text-xl">
                     <a href="https://instagram.com/imvilliambutcher" target="_blank" class="text-gray-500 hover:text-brand-red transition-colors"><i class="fa-brands fa-instagram"></i></a>
                     <a href="https://wa.me/917057193228" target="_blank" class="text-gray-500 hover:text-brand-red transition-colors"><i class="fa-brands fa-whatsapp"></i></a>
                     <a href="https://t.me/i_necxy" target="_blank" class="text-gray-500 hover:text-brand-red transition-colors"><i class="fa-brands fa-telegram"></i></a>
+                    <!-- Direct call icon added -->
+                    <a href="tel:7057193228" class="text-gray-500 hover:text-brand-red transition-colors"><i class="fa-solid fa-phone"></i></a>
                 </div>
-                <p class="text-white/20 text-[10px] uppercase tracking-[0.4em] mt-12">© 2025 NEX HAIR SALON</p>
+                <div class="flex justify-center gap-6 mt-4 text-xs text-gray-600">
+                    <button onclick="openPrivacyModal()" class="hover:text-brand-red transition-colors">Privacy Policy</button>
+                </div>
+                <p class="text-white/20 text-[10px] uppercase tracking-[0.4em] mt-12">© 2025 THE NEX HAIR SALON</p>
             </div>
         </div>
     </footer>
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
-        // (All existing JavaScript remains exactly the same)
-        // Initialize EmailJS – Public Key from user
         (function() {
             emailjs.init("qE3Vr3MC04BfiP8OE"); 
         })();
 
-        // Firebase configuration – Provided by user
+        // 🔥 Same Firebase config as admin panel
         const firebaseConfig = {
-            apiKey: "AIzaSyBjS3t_CzbX1N8DtrJU9TUb9Tk1T1wPn7w",
-            authDomain: "necxcore.firebaseapp.com",
-            projectId: "necxcore",
-            storageBucket: "necxcore.firebasestorage.app",
-            messagingSenderId: "283476423926",
-            appId: "1:283476423926:web:6af707e22cfce90a27a8d7"
+            apiKey: "AIzaSyAzGcDXubeeAdzlo8kfFa2naEilB3a7WAA",
+            authDomain: "necxelgram.firebaseapp.com",
+            databaseURL: "https://necxelgram-default-rtdb.firebaseio.com",
+            projectId: "necxelgram",
+            storageBucket: "necxelgram.firebasestorage.app",
+            messagingSenderId: "259144804970",
+            appId: "1:259144804970:web:9809fa52b6ff55f0f83813"
         };
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const db = firebase.database();
 
-        AOS.init({ duration: 800, mirror: true, once: false });
+        // Realtime DB references
+        const servicesRef = db.ref('services');
+        const staffRef = db.ref('staff');
+        const settingsRef = db.ref('settings');
+        const offersRef = db.ref('offers');
+        const rulesRef = db.ref('rules');
+        const emailSettingsRef = db.ref('emailSettings');
+        const bookingsRef = db.ref('bookings');
+        const clientsRef = db.ref('clients');
+        const waitlistRef = db.ref('waitlist');
 
-        document.addEventListener('click', e => {
-            let ripple = document.createElement('div');
-            ripple.classList.add('click-ripple');
-            ripple.style.left = e.pageX + 'px';
-            ripple.style.top = e.pageY + 'px';
-            document.body.appendChild(ripple);
-            setTimeout(() => ripple.remove(), 600);
+        // Global data stores
+        let services = {};
+        let settings = {};
+        let rules = {
+            minHours: 2,
+            maxPerDay: 50,
+            buffer: 60,
+            allowWeekend: true
+        };
+        let emailSettings = {};
+        let currentOffer = { title: '', couponCode: '', percent: 0, maxUses: 0, expiryDate: '', active: false, usedCount: 0 };
+
+        // For coupon/discount
+        let currentServicePrice = 0;
+        let currentDiscountPercent = 0;
+        let appliedCouponCode = '';
+        let appliedOfferTitle = '';
+
+        // ---------- Fetch data and build UI ----------
+        function loadData() {
+            servicesRef.on('value', (snapshot) => {
+                services = snapshot.val() || {};
+                buildPricingCards();
+                buildServiceDropdown();
+            });
+
+            settingsRef.on('value', (snapshot) => {
+                settings = snapshot.val() || {};
+                updateContactInfo();
+            });
+
+            rulesRef.on('value', (snapshot) => {
+                rules = snapshot.val() || rules;
+            });
+
+            emailSettingsRef.on('value', (snapshot) => {
+                emailSettings = snapshot.val() || {};
+            });
+
+            // Listen to global offer (for validation only, not display)
+            offersRef.on('value', (snapshot) => {
+                currentOffer = snapshot.val() || { title: '', couponCode: '', percent: 0, maxUses: 0, expiryDate: '', active: false, usedCount: 0 };
+            });
+        }
+
+        function updateContactInfo() {
+            if (settings.hours) {
+                document.getElementById('hero-hours').innerText = settings.hours;
+                const hoursList = document.getElementById('hours-list');
+                if (hoursList) {
+                    const lines = settings.hours.split('\n').filter(l => l.trim());
+                    let html = '';
+                    lines.forEach(line => {
+                        const parts = line.split(':');
+                        if (parts.length >= 2) {
+                            html += `<li class="flex justify-between"><span>${parts[0]}</span> <span class="font-bold text-white">${parts.slice(1).join(':')}</span></li>`;
+                        } else {
+                            html += `<li class="flex justify-between"><span>${line}</span></li>`;
+                        }
+                    });
+                    hoursList.innerHTML = html;
+                }
+            }
+            const footerContact = document.getElementById('footer-contact');
+            if (footerContact) {
+                footerContact.innerHTML = `Shantanu Jagdale | ${settings.phone || '7057193228'}<br>${settings.address || 'Barshi Naka, Dharashiv, 413501'}`;
+            }
+        }
+
+        function buildPricingCards() {
+            const monthlyContainer = document.getElementById('pricing-monthly');
+            const onetimeContainer = document.getElementById('pricing-onetime');
+            monthlyContainer.innerHTML = '';
+            onetimeContainer.innerHTML = '';
+
+            Object.entries(services).forEach(([key, s]) => {
+                if (!s) return;
+                const title = s.title || 'Service';
+                const price = s.price || 0;
+                const type = s.type || 'Haircut';
+                const features = s.features || ['Premium service'];
+                const featureItems = features.slice(0, 3).map(f => `<li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> ${f}</li>`).join('');
+
+                const cardHtml = `
+                    <div onclick="openPlanModal('${key}')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up">
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fa-solid fa-cut text-brand-red text-xl"></i>
+                                <h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">${title}</h3>
+                            </div>
+                            <h2 class="text-3xl font-heading mt-2 text-white">₹${price}</h2>
+                            <div class="h-px bg-white/10 w-full my-3"></div>
+                            <ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                                ${featureItems}
+                            </ul>
+                        </div>
+                        <div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div>
+                    </div>
+                `;
+
+                // Combo detection based on isCombo flag (set by admin)
+                if (s.isCombo) {
+                    onetimeContainer.innerHTML += cardHtml;
+                } else {
+                    monthlyContainer.innerHTML += cardHtml;
+                }
+            });
+
+            if (onetimeContainer.innerHTML === '') {
+                onetimeContainer.innerHTML = '<div class="col-span-full py-16 text-center opacity-10 font-black uppercase tracking-[1em]">No Combo Offers</div>';
+            }
+            if (monthlyContainer.innerHTML === '') {
+                monthlyContainer.innerHTML = '<div class="col-span-full py-16 text-center opacity-10 font-black uppercase tracking-[1em]">No Services Available</div>';
+            }
+        }
+
+        function buildServiceDropdown() {
+            const hiddenSelect = document.getElementById('c-service');
+            const optionsContainer = document.getElementById('options-container');
+            const searchInput = document.getElementById('service-search');
+            const selectedTextSpan = document.getElementById('selected-text');
+
+            hiddenSelect.innerHTML = '<option value="" selected disabled>SELECT SERVICE</option>';
+            
+            const servicesList = Object.entries(services).map(([key, s]) => ({
+                key: key,
+                title: s.title || 'Untitled',
+                price: s.price || 0,
+                type: s.type || 'Haircut',
+                duration: s.duration || 30,
+                desc: s.desc || '',
+                features: s.features || []
+            })).sort((a, b) => a.title.localeCompare(b.title));
+
+            servicesList.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.key;
+                option.textContent = `${s.title} - ₹${s.price}`;
+                hiddenSelect.appendChild(option);
+            });
+
+            function renderOptions(filter = '') {
+                optionsContainer.innerHTML = '';
+                const filtered = servicesList.filter(s => s.title.toLowerCase().includes(filter.toLowerCase()));
+                if (filtered.length === 0) {
+                    optionsContainer.innerHTML = '<div class="select-option" style="justify-content: center; color: #888;">No services found</div>';
+                    return;
+                }
+                filtered.forEach(s => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'select-option';
+                    if (hiddenSelect.value === s.key) {
+                        optionDiv.classList.add('selected');
+                    }
+                    optionDiv.innerHTML = `<i class="fa-solid fa-cut"></i><span class="option-text">${s.title}</span><span class="option-price">₹${s.price}</span>`;
+                    optionDiv.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selectService(s.key);
+                        document.getElementById('select-items').classList.remove('show');
+                        document.getElementById('select-selected').classList.remove('open');
+                    });
+                    optionsContainer.appendChild(optionDiv);
+                });
+            }
+
+            window.selectService = (key) => {
+                const service = servicesList.find(s => s.key === key);
+                if (service) {
+                    hiddenSelect.value = key;
+                    selectedTextSpan.innerText = `${service.title} - ₹${service.price}`;
+                    currentServicePrice = service.price;
+                    // Reset coupon when service changes
+                    currentDiscountPercent = 0;
+                    appliedCouponCode = '';
+                    appliedOfferTitle = '';
+                    document.getElementById('coupon-code').value = '';
+                    document.getElementById('discount-info').classList.add('hidden');
+                    updateTotalDisplay();
+                    document.querySelectorAll('.select-option').forEach(opt => opt.classList.remove('selected'));
+                    renderOptions(searchInput.value);
+                }
+            };
+
+            renderOptions();
+
+            document.getElementById('select-selected').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const items = document.getElementById('select-items');
+                items.classList.toggle('show');
+                document.getElementById('select-selected').classList.toggle('open');
+                if (items.classList.contains('show')) {
+                    searchInput.focus();
+                }
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                renderOptions(e.target.value);
+            });
+
+            document.addEventListener('click', (e) => {
+                const selected = document.getElementById('select-selected');
+                const items = document.getElementById('select-items');
+                if (!selected.contains(e.target) && !items.contains(e.target)) {
+                    items.classList.remove('show');
+                    selected.classList.remove('open');
+                }
+            });
+        }
+
+        // Coupon apply logic – only shows "New Shop Discount applied" on success
+        document.getElementById('apply-coupon').addEventListener('click', async () => {
+            const code = document.getElementById('coupon-code').value.trim();
+            const discountInfo = document.getElementById('discount-info');
+            if (!code) {
+                discountInfo.classList.remove('hidden', 'text-green-500');
+                discountInfo.classList.add('text-red-500');
+                discountInfo.innerText = 'Invalid coupon';
+                return;
+            }
+            if (!currentServicePrice) {
+                discountInfo.classList.remove('hidden', 'text-green-500');
+                discountInfo.classList.add('text-red-500');
+                discountInfo.innerText = 'Invalid coupon';
+                return;
+            }
+
+            // Validate against currentOffer
+            if (!currentOffer.active) {
+                discountInfo.classList.remove('hidden', 'text-green-500');
+                discountInfo.classList.add('text-red-500');
+                discountInfo.innerText = 'Invalid coupon';
+                return;
+            }
+
+            if (code.toLowerCase() !== (currentOffer.couponCode || '').toLowerCase()) {
+                discountInfo.classList.remove('hidden', 'text-green-500');
+                discountInfo.classList.add('text-red-500');
+                discountInfo.innerText = 'Invalid coupon';
+                return;
+            }
+
+            // Check expiry
+            if (currentOffer.expiryDate) {
+                const today = new Date().toISOString().split('T')[0];
+                if (today > currentOffer.expiryDate) {
+                    discountInfo.classList.remove('hidden', 'text-green-500');
+                    discountInfo.classList.add('text-red-500');
+                    discountInfo.innerText = 'Invalid coupon';
+                    return;
+                }
+            }
+
+            // Check max uses
+            if (currentOffer.maxUses > 0 && (currentOffer.usedCount || 0) >= currentOffer.maxUses) {
+                discountInfo.classList.remove('hidden', 'text-green-500');
+                discountInfo.classList.add('text-red-500');
+                discountInfo.innerText = 'Invalid coupon';
+                return;
+            }
+
+            // Valid coupon
+            currentDiscountPercent = currentOffer.percent || 0;
+            appliedCouponCode = code;
+            appliedOfferTitle = currentOffer.title;
+            discountInfo.classList.remove('hidden', 'text-red-500');
+            discountInfo.classList.add('text-green-500');
+            discountInfo.innerText = 'New Shop Discount applied';
+            updateTotalDisplay();
         });
 
-        function switchPrice(type) {
+        function updateTotalDisplay() {
+            const finalPrice = currentServicePrice * (1 - currentDiscountPercent / 100);
+            document.getElementById('total-amount').innerText = Math.round(finalPrice);
+        }
+
+        // Toggle coupon section visibility
+        document.getElementById('toggle-coupon').addEventListener('click', function() {
+            const couponSection = document.getElementById('coupon-section');
+            couponSection.classList.toggle('hidden');
+        });
+
+        // Plan modal opener (unchanged)
+        window.openPlanModal = (serviceKey) => {
+            const s = services[serviceKey];
+            if (!s) return;
+
+            const modal = document.getElementById('plan-modal');
+            const card = document.getElementById('plan-modal-card');
+
+            document.getElementById('pm-type').innerText = s.type || 'Service';
+            document.getElementById('pm-title').innerText = s.title || 'SERVICE';
+            document.getElementById('pm-price').innerText = '₹' + (s.price || 0);
+            document.getElementById('pm-desc').innerText = s.desc || 'Premium service.';
+
+            const featList = document.getElementById('pm-features');
+            featList.innerHTML = '';
+            const features = s.features || ['Consultation', 'Premium Styling', 'Finishing'];
+            features.forEach(f => {
+                featList.innerHTML += `<li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-red"></i> ${f}</li>`;
+            });
+
+            const btn = document.getElementById('pm-buy-btn');
+            btn.onclick = function() {
+                closePlanModal();
+                document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+                setTimeout(() => {
+                    if (window.selectService) selectService(serviceKey);
+                    document.getElementById('service-search').value = '';
+                    renderOptions('');
+                    const msgBox = document.getElementById('c-msg');
+                    msgBox.value = `I want to book the ${s.title} (₹${s.price}). Please confirm availability.`;
+                    msgBox.focus();
+                }, 800);
+            };
+
+            modal.classList.remove('hidden');
+            setTimeout(() => { 
+                modal.classList.remove('opacity-0'); 
+                card.classList.remove('scale-90'); 
+                card.classList.add('scale-100'); 
+            }, 10);
+        };
+
+        // ---------- Availability & Time functions (unchanged, plus dropdown positioning) ----------
+        const timeList = [];
+        for (let h = 9; h <= 21; h++) {
+            for (let m = 0; m < 60; m += 30) {
+                if (h === 21 && m === 30) continue;
+                const hourStr = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
+                const period = h < 12 ? 'AM' : 'PM';
+                const hour12 = h % 12 || 12;
+                const minute = m === 0 ? '00' : '30';
+                const display = `${hour12}:${minute} ${period}`;
+                timeList.push({ value: hourStr, display: display });
+            }
+        }
+
+        const timeHiddenSelect = document.getElementById('c-time');
+        timeList.forEach(t => {
+            const option = document.createElement('option');
+            option.value = t.value;
+            option.textContent = t.display;
+            timeHiddenSelect.appendChild(option);
+        });
+
+        function renderTimeOptions(disabledTimes = []) {
+            const container = document.getElementById('time-options-container');
+            container.innerHTML = '';
+            timeList.forEach(t => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = 'select-option';
+                optionDiv.setAttribute('data-value', t.value);
+                if (timeHiddenSelect.value === t.value) {
+                    optionDiv.classList.add('selected');
+                }
+                const isDisabled = disabledTimes.includes(t.value);
+                if (isDisabled) {
+                    optionDiv.classList.add('disabled');
+                }
+                optionDiv.innerHTML = `<i class="fa-regular fa-clock"></i><span class="option-text">${t.display}</span>`;
+                if (!isDisabled) {
+                    optionDiv.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selectTime(t.value, t.display);
+                        document.getElementById('time-items').classList.remove('show');
+                        document.getElementById('time-selected').classList.remove('open');
+                    });
+                }
+                container.appendChild(optionDiv);
+            });
+        }
+
+        function selectTime(value, display) {
+            timeHiddenSelect.value = value;
+            document.getElementById('time-selected-text').innerText = display;
+            document.querySelectorAll('#time-options-container .select-option').forEach(opt => opt.classList.remove('selected'));
+            const selectedOpt = Array.from(document.querySelectorAll('#time-options-container .select-option')).find(opt => opt.getAttribute('data-value') === value);
+            if (selectedOpt) selectedOpt.classList.add('selected');
+        }
+
+        renderTimeOptions();
+
+        const dateSelected = document.getElementById('date-selected');
+        const dateItems = document.getElementById('date-items');
+        const displayMonthYear = document.getElementById('display-month-year');
+        const daysGrid = document.getElementById('days-grid');
+        const hiddenDate = document.getElementById('c-date');
+        const dateSelectedText = document.getElementById('date-selected-text');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        const calendarSkeleton = document.getElementById('calendar-skeleton');
+
+        let currentDate = new Date();
+        let currentMonth = currentDate.getMonth();
+        let currentYear = currentDate.getFullYear();
+
+        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+        async function fetchMonthAvailability(year, month) {
+            const startDate = `${year}-${String(month+1).padStart(2,'0')}-01`;
+            const endDate = `${year}-${String(month+1).padStart(2,'0')}-${new Date(year, month+1, 0).getDate()}`;
+            
+            const snapshot = await bookingsRef.once('value');
+            const allBookings = snapshot.val() || {};
+            
+            const bookingsByDate = {};
+            Object.values(allBookings).forEach(b => {
+                if (b.date && b.date >= startDate && b.date <= endDate) {
+                    if (!bookingsByDate[b.date]) bookingsByDate[b.date] = [];
+                    bookingsByDate[b.date].push(b.time);
+                }
+            });
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const availability = {};
+            const today = new Date().toISOString().split('T')[0];
+            const now = new Date();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const buffer = rules.buffer || 60;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const bookedTimes = bookingsByDate[dateStr] || [];
+                let available = false;
+                for (let slot of timeList) {
+                    const slotMinutes = timeToMinutes(slot.value);
+                    let isBooked = false;
+                    for (let bt of bookedTimes) {
+                        const btMinutes = timeToMinutes(bt);
+                        if (Math.abs(btMinutes - slotMinutes) < buffer) {
+                            isBooked = true;
+                            break;
+                        }
+                    }
+                    if (!isBooked) {
+                        if (dateStr === today && slotMinutes < currentMinutes) continue;
+                        available = true;
+                        break;
+                    }
+                }
+                availability[dateStr] = available;
+            }
+            return availability;
+        }
+
+        async function renderCalendar(month, year) {
+            daysGrid.classList.add('hidden');
+            calendarSkeleton.classList.remove('hidden');
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            
+            displayMonthYear.innerText = `${monthNames[month]} ${year}`;
+
+            const availability = await fetchMonthAvailability(year, month);
+
+            let gridHtml = '';
+            for (let i = 0; i < firstDay; i++) {
+                gridHtml += '<div class="day-cell empty"></div>';
+            }
+            const today = new Date();
+            const todayDate = today.getDate();
+            const todayMonth = today.getMonth();
+            const todayYear = today.getFullYear();
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const cellDate = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+                const isToday = (d === todayDate && month === todayMonth && year === todayYear);
+                const isPast = (year < todayYear) || (year === todayYear && month < todayMonth) || (year === todayYear && month === todayMonth && d < todayDate);
+                const isSelected = (hiddenDate.value === cellDate);
+                const isAvailable = availability[cellDate] === true;
+                let classes = 'day-cell';
+                if (isPast) classes += ' disabled';
+                if (isToday) classes += ' today';
+                if (isSelected) classes += ' selected';
+                if (!isPast) {
+                    if (isAvailable) classes += ' available';
+                    else classes += ' unavailable';
+                }
+                gridHtml += `<div class="${classes}" data-date="${cellDate}">${d}<span class="availability-dot"></span></div>`;
+            }
+            daysGrid.innerHTML = gridHtml;
+            daysGrid.classList.remove('hidden');
+            calendarSkeleton.classList.add('hidden');
+
+            document.querySelectorAll('.day-cell:not(.empty):not(.disabled)').forEach(cell => {
+                cell.addEventListener('click', () => {
+                    const date = cell.getAttribute('data-date');
+                    selectDate(date);
+                    dateItems.classList.remove('show');
+                    dateSelected.classList.remove('open');
+                });
+            });
+        }
+
+        function selectDate(date) {
+            hiddenDate.value = date;
+            const d = new Date(date + 'T00:00:00');
+            const display = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, ' ');
+            dateSelectedText.innerText = display;
+            renderCalendar(currentMonth, currentYear);
+            const event = new Event('change', { bubbles: true });
+            hiddenDate.dispatchEvent(event);
+        }
+
+        prevMonthBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            renderCalendar(currentMonth, currentYear);
+        });
+
+        nextMonthBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            renderCalendar(currentMonth, currentYear);
+        });
+
+        dateSelected.addEventListener('click', (e) => {
+            e.stopPropagation();
+            dateItems.classList.toggle('show');
+            dateSelected.classList.toggle('open');
+            if (hiddenDate.value) {
+                const selected = new Date(hiddenDate.value + 'T00:00:00');
+                currentMonth = selected.getMonth();
+                currentYear = selected.getFullYear();
+            } else {
+                const today = new Date();
+                currentMonth = today.getMonth();
+                currentYear = today.getFullYear();
+            }
+            renderCalendar(currentMonth, currentYear);
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!dateSelected.contains(e.target) && !dateItems.contains(e.target)) {
+                dateItems.classList.remove('show');
+                dateSelected.classList.remove('open');
+            }
+        });
+
+        const timeSelected = document.getElementById('time-selected');
+        const timeItems = document.getElementById('time-items');
+
+        timeSelected.addEventListener('click', (e) => {
+            e.stopPropagation();
+            // Dynamic positioning: open upward if not enough space below
+            const rect = timeSelected.getBoundingClientRect();
+            const spaceBelow = window.innerHeight - rect.bottom;
+            const dropdownHeight = 400; // max-height from CSS
+            if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+                timeItems.style.top = 'auto';
+                timeItems.style.bottom = '100%';
+                timeItems.style.marginBottom = '8px';
+            } else {
+                timeItems.style.top = 'calc(100% + 8px)';
+                timeItems.style.bottom = 'auto';
+                timeItems.style.marginBottom = '0';
+            }
+            timeItems.classList.toggle('show');
+            timeSelected.classList.toggle('open');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!timeSelected.contains(e.target) && !timeItems.contains(e.target)) {
+                timeItems.classList.remove('show');
+                timeSelected.classList.remove('open');
+            }
+        });
+
+        hiddenDate.addEventListener('change', async function(e) {
+            const date = e.target.value;
+            if (!date) return;
+            const skeleton = document.getElementById('time-skeleton');
+            skeleton.classList.remove('hidden');
+            timeItems.classList.remove('show');
+            timeSelected.classList.remove('open');
+
+            try {
+                const snapshot = await bookingsRef.once('value');
+                const allBookings = snapshot.val() || {};
+                const bookedTimes = Object.values(allBookings)
+                    .filter(b => b.date === date)
+                    .map(b => b.time);
+
+                const today = new Date().toISOString().split('T')[0];
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                const buffer = rules.buffer || 60;
+
+                const disabledTimes = timeList.filter(t => {
+                    const time = t.value;
+                    const timeMinutes = timeToMinutes(time);
+                    if (bookedTimes.some(bt => Math.abs(timeToMinutes(bt) - timeMinutes) < buffer)) {
+                        return true;
+                    }
+                    if (date === today && timeMinutes < currentMinutes) {
+                        return true;
+                    }
+                    return false;
+                }).map(t => t.value);
+
+                renderTimeOptions(disabledTimes);
+                if (timeHiddenSelect.value && disabledTimes.includes(timeHiddenSelect.value)) {
+                    timeHiddenSelect.value = '';
+                    document.getElementById('time-selected-text').innerText = 'SELECT TIME';
+                }
+            } catch (error) {
+                console.error("Error fetching availability:", error);
+            } finally {
+                skeleton.classList.add('hidden');
+            }
+        });
+
+        function timeToMinutes(time) {
+            const [h, m] = time.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        async function isTimeSlotAvailable(date, time) {
+            const snapshot = await bookingsRef.once('value');
+            const allBookings = snapshot.val() || {};
+            const selectedMinutes = timeToMinutes(time);
+            const buffer = rules.buffer || 60;
+
+            for (let b of Object.values(allBookings)) {
+                if (b.date === date) {
+                    const bookingMinutes = timeToMinutes(b.time);
+                    if (Math.abs(bookingMinutes - selectedMinutes) < buffer) {
+                        return false;
+                    }
+                }
+            }
+            const today = new Date().toISOString().split('T')[0];
+            if (date === today) {
+                const now = new Date();
+                const currentMinutes = now.getHours() * 60 + now.getMinutes();
+                if (selectedMinutes < currentMinutes) return false;
+            }
+            return true;
+        }
+
+        async function addToWaitlist(data) {
+            try {
+                await waitlistRef.push({
+                    name: data.name,
+                    phone: data.phone,
+                    email: data.email,
+                    service: data.service,
+                    serviceTitle: data.serviceTitle,
+                    servicePrice: data.servicePrice,
+                    date: data.date,
+                    time: data.time,
+                    message: data.message,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+                return true;
+            } catch (error) {
+                console.error("Waitlist error:", error);
+                return false;
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i> <span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, 4000);
+        }
+
+        function closeTicketModal() {
+            const modal = document.getElementById('ticket-modal');
+            const card = document.getElementById('ticket-modal-card');
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-90');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+
+        function showTicketModal(bookingData, bookingId) {
+            document.getElementById('ticket-id').innerText = `#${bookingId.slice(-8)}`;
+            document.getElementById('ticket-name').innerText = bookingData.name;
+            document.getElementById('ticket-phone').innerText = bookingData.phone;
+            document.getElementById('ticket-email').innerText = bookingData.email;
+            document.getElementById('ticket-service').innerText = bookingData.serviceTitle;
+            document.getElementById('ticket-price').innerText = `₹${bookingData.finalPrice}`;
+            document.getElementById('ticket-date').innerText = bookingData.date;
+            const time24 = bookingData.time;
+            const [h, m] = time24.split(':');
+            const period = h < 12 ? 'AM' : 'PM';
+            const hour12 = h % 12 || 12;
+            document.getElementById('ticket-time').innerText = `${hour12}:${m} ${period}`;
+            document.getElementById('ticket-msg').innerText = bookingData.message || '-';
+
+            const modal = document.getElementById('ticket-modal');
+            const card = document.getElementById('ticket-modal-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => { 
+                modal.classList.remove('opacity-0'); 
+                card.classList.remove('scale-90'); 
+                card.classList.add('scale-100'); 
+            }, 10);
+        }
+
+        window.downloadTicket = function() {
+            const ticketContent = document.getElementById('ticket-content');
+            html2canvas(ticketContent, { scale: 2, backgroundColor: '#0f0f0f' }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'NEX-ticket.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                showToast('Ticket image downloaded!', 'success');
+            });
+        };
+
+        function generateBookingId() {
+            return 'NEX' + Math.floor(10000 + Math.random() * 90000);
+        }
+
+        // Form submit handler (updated to include discount and increment offer usage)
+        document.getElementById('contact-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const nameEl = document.getElementById('c-name');
+            const phoneEl = document.getElementById('c-phone');
+            const emailEl = document.getElementById('c-email');
+            const serviceEl = document.getElementById('c-service');
+            const dateEl = document.getElementById('c-date');
+            const timeEl = document.getElementById('c-time');
+            const msgEl = document.getElementById('c-msg');
+            const waitlistCheckbox = document.getElementById('waitlist-checkbox');
+            const availabilityMsg = document.getElementById('availability-msg');
+            const waitlistMsg = document.getElementById('waitlist-msg');
+            const submitBtn = document.getElementById('booking-submit-btn');
+            const spinner = document.getElementById('btn-spinner');
+
+            const nameErr = document.getElementById('name-error');
+            const phoneErr = document.getElementById('phone-error');
+            const emailErr = document.getElementById('email-error');
+            const serviceErr = document.getElementById('service-error');
+            const dateErr = document.getElementById('date-error');
+            const timeErr = document.getElementById('time-error');
+
+            const nameVal = nameEl.value.trim();
+            const phoneVal = phoneEl.value.trim();
+            const emailVal = emailEl.value.trim();
+            const serviceVal = serviceEl.value;
+            const dateVal = dateEl.value;
+            const timeVal = timeEl.value;
+            const msgVal = msgEl.value.trim();
+            const waitlist = waitlistCheckbox.checked;
+
+            let isValid = true;
+
+            [nameEl, phoneEl, emailEl].forEach(el => {
+                el.classList.remove('input-error', 'border-brand-red');
+                el.classList.add('border-white/10');
+            });
+            document.querySelector('#custom-service-select .select-selected').classList.remove('input-error');
+            document.querySelector('#custom-date-select .select-selected').classList.remove('input-error');
+            document.querySelector('#custom-time-select .select-selected').classList.remove('input-error');
+            [nameErr, phoneErr, emailErr, serviceErr, dateErr, timeErr].forEach(el => el.classList.add('hidden'));
+            availabilityMsg.classList.add('hidden');
+            waitlistMsg.classList.add('hidden');
+
+            if (!nameVal) { nameEl.classList.add('input-error'); nameErr.classList.remove('hidden'); isValid = false; }
+            if (!phoneVal || !/^\d{10,}$/.test(phoneVal)) { phoneEl.classList.add('input-error'); phoneErr.classList.remove('hidden'); isValid = false; }
+            if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) { emailEl.classList.add('input-error'); emailErr.classList.remove('hidden'); isValid = false; }
+            if (!serviceVal) { 
+                document.querySelector('#custom-service-select .select-selected').classList.add('input-error'); 
+                serviceErr.classList.remove('hidden'); 
+                isValid = false; 
+            }
+            if (!dateVal) { 
+                document.querySelector('#custom-date-select .select-selected').classList.add('input-error'); 
+                dateErr.classList.remove('hidden'); 
+                isValid = false; 
+            }
+            if (!timeVal) { 
+                document.querySelector('#custom-time-select .select-selected').classList.add('input-error'); 
+                timeErr.classList.remove('hidden'); 
+                isValid = false; 
+            }
+
+            if (!isValid) return;
+
+            submitBtn.querySelector('span').classList.add('hidden');
+            spinner.classList.remove('hidden');
+            submitBtn.disabled = true;
+
+            const available = await isTimeSlotAvailable(dateVal, timeVal);
+            if (!available) {
+                if (waitlist) {
+                    const selectedService = services[serviceVal] || { title: serviceVal, price: 0 };
+                    const waitlistData = {
+                        name: nameVal,
+                        phone: phoneVal,
+                        email: emailVal,
+                        service: serviceVal,
+                        serviceTitle: selectedService.title,
+                        servicePrice: selectedService.price || 0,
+                        date: dateVal,
+                        time: timeVal,
+                        message: msgVal
+                    };
+                    const added = await addToWaitlist(waitlistData);
+                    if (added) {
+                        waitlistMsg.classList.remove('hidden');
+                        waitlistMsg.innerHTML = 'You have been added to the waitlist. We will notify you if a slot opens.';
+                        showToast('Added to waitlist', 'success');
+                    } else {
+                        availabilityMsg.classList.remove('hidden');
+                        availabilityMsg.innerHTML = 'Waitlist failed. Please try again.';
+                    }
+                } else {
+                    availabilityMsg.classList.remove('hidden');
+                    availabilityMsg.innerHTML = 'This time slot is already booked. Please select another time or check waitlist.';
+                    document.querySelector('#custom-time-select .select-selected').classList.add('input-error');
+                }
+                submitBtn.querySelector('span').classList.remove('hidden');
+                spinner.classList.add('hidden');
+                submitBtn.disabled = false;
+                return;
+            }
+
+            // Slot available, proceed with booking
+            const selectedService = services[serviceVal] || { title: serviceVal, price: 0 };
+            const serviceTitle = selectedService.title;
+            const originalPrice = selectedService.price || 0;
+            const discountPercent = currentDiscountPercent;
+            const finalPrice = originalPrice * (1 - discountPercent / 100);
+            const bookingId = generateBookingId();
+
+            try {
+                // Increment offer usage if coupon applied (atomic transaction)
+                if (appliedCouponCode) {
+                    const offerRef = offersRef;
+                    await offerRef.transaction((current) => {
+                        if (current) {
+                            current.usedCount = (current.usedCount || 0) + 1;
+                        }
+                        return current;
+                    });
+                }
+
+                // Push to bookings with discount details
+                const newBookingRef = bookingsRef.push();
+                await newBookingRef.set({
+                    clientName: nameVal,
+                    phone: phoneVal,
+                    email: emailVal,
+                    service: serviceVal,
+                    serviceTitle: serviceTitle,
+                    originalPrice: originalPrice,
+                    discountPercent: discountPercent,
+                    discountAmount: originalPrice - finalPrice,
+                    finalPrice: Math.round(finalPrice),
+                    couponCode: appliedCouponCode || '',
+                    offerTitle: appliedOfferTitle || '',
+                    date: dateVal,
+                    time: timeVal,
+                    notes: msgVal,
+                    bookingId: bookingId,
+                    status: 'Pending',
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                // Update client record
+                const clientSnapshot = await clientsRef.orderByChild('phone').equalTo(phoneVal).once('value');
+                let clientKey = null;
+                if (clientSnapshot.exists()) {
+                    clientKey = Object.keys(clientSnapshot.val())[0];
+                }
+                const clientData = {
+                    name: nameVal,
+                    phone: phoneVal,
+                    email: emailVal,
+                    lastVisit: dateVal,
+                    totalSpent: (clientSnapshot.val()?.[clientKey]?.totalSpent || 0) + finalPrice,
+                    updatedAt: firebase.database.ServerValue.TIMESTAMP
+                };
+                if (clientKey) {
+                    await clientsRef.child(clientKey).update(clientData);
+                } else {
+                    await clientsRef.push({
+                        ...clientData,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                }
+
+                // Send email via EmailJS (fixed template parameters)
+                const serviceID = "service_54hp8dd";
+                const templateID = "template_ou3pk5a"; 
+                const templateParams = {
+                    user_email: emailVal,
+                    customer_name: nameVal,
+                    booking_id: bookingId,
+                    booking_date: dateVal,
+                    booking_time: timeVal,
+                    services_booked: serviceTitle,
+                    total_price: Math.round(finalPrice),
+                    message: msgVal || "No special request"
+                };
+                await emailjs.send(serviceID, templateID, templateParams);
+
+                // Reset form
+                document.getElementById('contact-form').reset();
+                document.getElementById('c-service').value = '';
+                document.getElementById('selected-text').innerText = 'SELECT SERVICE';
+                document.getElementById('c-date').value = '';
+                document.getElementById('date-selected-text').innerText = 'SELECT DATE';
+                document.getElementById('c-time').value = '';
+                document.getElementById('time-selected-text').innerText = 'SELECT TIME';
+                document.getElementById('coupon-code').value = '';
+                document.getElementById('discount-info').classList.add('hidden');
+                currentServicePrice = 0;
+                currentDiscountPercent = 0;
+                appliedCouponCode = '';
+                appliedOfferTitle = '';
+                updateTotalDisplay();
+                const today = new Date();
+                currentMonth = today.getMonth();
+                currentYear = today.getFullYear();
+                renderCalendar(currentMonth, currentYear);
+                renderTimeOptions([]);
+                waitlistCheckbox.checked = false;
+
+                const bookingData = { 
+                    name: nameVal, 
+                    phone: phoneVal, 
+                    email: emailVal, 
+                    serviceTitle: serviceTitle,
+                    finalPrice: Math.round(finalPrice),
+                    date: dateVal, 
+                    time: timeVal, 
+                    message: msgVal 
+                };
+                showTicketModal(bookingData, newBookingRef.key);
+                showToast('Booking confirmed! Ticket sent to email.', 'success');
+
+            } catch (error) {
+                console.error("Error adding booking: ", error);
+                availabilityMsg.classList.remove('hidden');
+                availabilityMsg.innerHTML = 'Booking failed. Please try again.';
+                showToast('Booking failed, try again', 'error');
+            } finally {
+                submitBtn.querySelector('span').classList.remove('hidden');
+                spinner.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        });
+
+        // ---------- Other existing UI functions (unchanged) ----------
+        window.switchPrice = function(type) {
             if(type === 'mens') {
                 document.getElementById('btn-monthly').classList.add('bg-brand-red', 'border-brand-red');
                 document.getElementById('btn-monthly').classList.remove('border-white/20');
@@ -1007,13 +2043,13 @@
                 document.getElementById('pricing-onetime').classList.remove('hidden');
                 document.getElementById('pricing-monthly').classList.add('hidden');
             }
-        }
+        };
 
-        function toggleMenu() {
+        window.toggleMenu = function() {
             document.getElementById('mobile-menu').classList.toggle('open');
-        }
+        };
 
-        function toggleProfile() {
+        window.toggleProfile = function() {
             const popup = document.getElementById('profile-popup');
             const card = document.getElementById('profile-card');
             
@@ -1025,7 +2061,27 @@
                 popup.classList.add('opacity-0'); card.classList.remove('scale-100'); card.classList.add('scale-90');
                 setTimeout(() => { popup.classList.add('hidden'); }, 300);
             }
-        }
+        };
+
+        window.openPrivacyModal = function() {
+            const modal = document.getElementById('privacy-modal');
+            const card = document.getElementById('privacy-modal-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => { 
+                modal.classList.remove('opacity-0'); 
+                card.classList.remove('scale-90'); 
+                card.classList.add('scale-100'); 
+            }, 10);
+        };
+
+        window.closePrivacyModal = function() {
+            const modal = document.getElementById('privacy-modal');
+            const card = document.getElementById('privacy-modal-card');
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-90');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
 
         const serviceData = {
             'haircut': { title: 'PRECISION CUT', icon: 'fa-solid fa-scissors', desc: 'Expert fade, textured layers or classic cut. We use premium scissors and razors for sharp lines and a look that suits your face shape.', category: 'haircut', color: '#E1306C' },
@@ -1034,7 +2090,7 @@
             'styling': { title: 'ROYAL GROOM', icon: 'fa-solid fa-spa', desc: 'Luxury facial, hair spa, and deep conditioning. Relax and rejuvenate while we give your hair and skin the royal treatment.', category: 'styling', color: '#A855F7' }
         };
 
-        function openServiceModal(serviceKey) {
+        window.openServiceModal = function(serviceKey) {
             const modal = document.getElementById('service-modal');
             const card = document.getElementById('service-modal-card');
             const data = serviceData[serviceKey];
@@ -1081,688 +2137,56 @@
                 card.classList.remove('scale-90'); 
                 card.classList.add('scale-100'); 
             }, 10);
-        }
+        };
 
-        function closeServiceModal() {
+        window.closeServiceModal = function() {
             const modal = document.getElementById('service-modal');
             const card = document.getElementById('service-modal-card');
             modal.classList.add('opacity-0');
             card.classList.remove('scale-100');
             card.classList.add('scale-90');
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
+        };
 
-        window.closeSuccessModal = () => {
+        window.closeSuccessModal = function() {
             const modal = document.getElementById('success-modal');
             const card = document.getElementById('success-modal-card');
             modal.classList.add('opacity-0');
             card.classList.remove('scale-100');
             card.classList.add('scale-90');
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
-
-        const planData = {
-            'classic': { title: 'CLASSIC CUT', price: '399', type: 'Haircut', desc: 'Signature haircut with consultation, wash, cut & style.', features: ['Consultation & Wash', 'Precision Cutting', 'Neck Shave', 'Styling'] },
-            'skinFade': { title: 'SKIN FADE', price: '499', type: 'Haircut', desc: 'Premium skin fade with sharp lines.', features: ['Skin Fade Technique', 'Line-up', 'Beard Line-up', 'Styling'] },
-            'beard': { title: 'BEARD SCULPT', price: '299', type: 'Beard', desc: 'Hot towel, trim, shape and moisturize.', features: ['Hot Towel', 'Scissors & Trimmer', 'Edge Line-up', 'Beard Oil'] },
-            'color': { title: 'HAIR COLOR', price: '999+', type: 'Color', desc: 'Premium ammonia-free color, custom shade.', features: ['Strand Test', 'Full Application', 'Toner', 'Shampoo & Style'] },
-            'hairSpa': { title: 'HAIR SPA', price: '799', type: 'Spa', desc: 'Deep conditioning and scalp therapy.', features: ['Steam', 'Deep Conditioning Mask', 'Head Massage', 'Style'] },
-            'facial': { title: 'CHARCOAL FACIAL', price: '699', type: 'Facial', desc: 'Deep cleanse with charcoal.', features: ['Cleansing', 'Charcoal Mask', 'Massage', 'Toner'] },
-            'headMassage': { title: 'HEAD MASSAGE', price: '399', type: 'Massage', desc: 'Relaxing head and neck massage.', features: ['Oil Massage', 'Hot Towel', 'Shoulder Rub', '30 Mins'] },
-            'mustache': { title: 'MUSTACHE GROOM', price: '199', type: 'Beard', desc: 'Precision mustache shaping.', features: ['Trim', 'Shape', 'Wax (optional)', 'Oil'] },
-            'pompadour': { title: 'POMPADOUR STYLE', price: '449', type: 'Styling', desc: 'Classic pompadour styling.', features: ['Volume Boost', 'Premium Clay', 'Hold Spray', 'Consultation'] },
-            'greyBlend': { title: 'GREY BLENDING', price: '1199', type: 'Color', desc: 'Natural grey camouflage.', features: ['Blend Technique', 'Natural Look', 'Root Touch-up', 'Style'] },
-            'combo1': { title: 'HAIRCUT + BEARD', price: '599', type: 'Combo', desc: 'Complete grooming package.', features: ['Classic Haircut', 'Beard Sculpt', 'Eyebrow Trim', 'Warm Towel'] },
-            'combo2': { title: 'COLOR + CUT', price: '1499', type: 'Combo', desc: 'Full color + precision cut.', features: ['Premium Hair Color', 'Grey Coverage', 'Precision Cut', 'Conditioning'] },
-            'combo3': { title: 'ROYAL PACKAGE', price: '2499', type: 'Luxury', desc: 'Ultimate grooming.', features: ['Haircut', 'Beard Sculpt', 'Facial', 'Hair Spa'] },
-            'combo4': { title: 'HAIR SPA + CUT', price: '1199', type: 'Combo', desc: 'Spa + haircut.', features: ['Hair Spa', 'Classic Cut', 'Style', 'Scalp Massage'] },
-            'combo5': { title: 'FACIAL + BEARD', price: '899', type: 'Combo', desc: 'Facial & beard.', features: ['Charcoal Facial', 'Beard Sculpt', 'Oil', 'Hot Towel'] }
         };
 
-        function openPlanModal(planKey) {
-            const modal = document.getElementById('plan-modal');
-            const card = document.getElementById('plan-modal-card');
-            const data = planData[planKey];
-
-            if(!data) return;
-
-            document.getElementById('pm-type').innerText = data.type;
-            document.getElementById('pm-title').innerText = data.title;
-            document.getElementById('pm-price').innerText = '₹' + data.price;
-            document.getElementById('pm-desc').innerText = data.desc;
-
-            const featList = document.getElementById('pm-features');
-            featList.innerHTML = '';
-            data.features.forEach(f => {
-                featList.innerHTML += `<li class="flex items-center gap-2"><i class="fa-solid fa-check text-brand-red"></i> ${f}</li>`;
-            });
-
-            const btn = document.getElementById('pm-buy-btn');
-            btn.onclick = function() {
-                closePlanModal();
-                document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
-                setTimeout(() => {
-                    // Try to select the matching service in custom dropdown
-                    const optionToSelect = servicesList.find(s => s.title.includes(data.title));
-                    if (optionToSelect) {
-                        selectService(optionToSelect.key);
-                        document.getElementById('service-search').value = '';
-                        renderOptions('');
-                    }
-                    const msgBox = document.getElementById('c-msg');
-                    msgBox.value = `I want to book the ${data.title} (₹${data.price}). Please confirm availability.`;
-                    msgBox.focus();
-                }, 800);
-            };
-
-            modal.classList.remove('hidden');
-            setTimeout(() => { 
-                modal.classList.remove('opacity-0'); 
-                card.classList.remove('scale-90'); 
-                card.classList.add('scale-100'); 
-            }, 10);
-        }
-
-        function closePlanModal() {
+        window.closePlanModal = function() {
             const modal = document.getElementById('plan-modal');
             const card = document.getElementById('plan-modal-card');
             modal.classList.add('opacity-0');
             card.classList.remove('scale-100');
             card.classList.add('scale-90');
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
+        };
 
-        // ---------- Service Dropdown Logic ----------
-        const selectSelected = document.getElementById('select-selected');
-        const selectItems = document.getElementById('select-items');
-        const optionsContainer = document.getElementById('options-container');
-        const searchInput = document.getElementById('service-search');
-        const hiddenSelect = document.getElementById('c-service');
-        const selectedTextSpan = document.getElementById('selected-text');
+        // Initialize AOS
+        AOS.init({ duration: 800, mirror: true, once: false });
 
-        let servicesList = [];
-        for (let key in planData) {
-            servicesList.push({
-                key: key,
-                title: planData[key].title,
-                price: planData[key].price
-            });
-        }
-        servicesList.sort((a, b) => a.title.localeCompare(b.title));
-
-        function renderOptions(filter = '') {
-            optionsContainer.innerHTML = '';
-            const filtered = servicesList.filter(s => s.title.toLowerCase().includes(filter.toLowerCase()));
-            if (filtered.length === 0) {
-                optionsContainer.innerHTML = '<div class="select-option" style="justify-content: center; color: #888;">No services found</div>';
-                return;
-            }
-            filtered.forEach(s => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'select-option';
-                if (hiddenSelect.value === s.key) {
-                    optionDiv.classList.add('selected');
-                }
-                optionDiv.innerHTML = `<i class="fa-solid fa-cut"></i><span class="option-text">${s.title}</span><span class="option-price">₹${s.price}</span>`;
-                optionDiv.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    selectService(s.key);
-                    selectItems.classList.remove('show');
-                    selectSelected.classList.remove('open');
-                });
-                optionsContainer.appendChild(optionDiv);
-            });
-        }
-
-        function selectService(key) {
-            const service = servicesList.find(s => s.key === key);
-            if (service) {
-                hiddenSelect.value = key;
-                selectedTextSpan.innerText = `${service.title} - ₹${service.price}`;
-                // remove selected class from all options
-                document.querySelectorAll('.select-option').forEach(opt => opt.classList.remove('selected'));
-                // highlight selected in current view
-                renderOptions(searchInput.value);
-            }
-        }
-
-        servicesList.forEach(s => {
-            const option = document.createElement('option');
-            option.value = s.key;
-            option.textContent = `${s.title} - ₹${s.price}`;
-            hiddenSelect.appendChild(option);
+        // Ripple effect
+        document.addEventListener('click', e => {
+            let ripple = document.createElement('div');
+            ripple.classList.add('click-ripple');
+            ripple.style.left = e.pageX + 'px';
+            ripple.style.top = e.pageY + 'px';
+            document.body.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
         });
 
-        renderOptions();
+        // Load all data on page load
+        loadData();
 
-        selectSelected.addEventListener('click', (e) => {
-            e.stopPropagation();
-            selectItems.classList.toggle('show');
-            selectSelected.classList.toggle('open');
-            if (selectItems.classList.contains('show')) {
-                searchInput.focus();
-            }
-        });
-
-        searchInput.addEventListener('input', (e) => {
-            renderOptions(e.target.value);
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!selectSelected.contains(e.target) && !selectItems.contains(e.target)) {
-                selectItems.classList.remove('show');
-                selectSelected.classList.remove('open');
-            }
-        });
-
-        // ---------- Custom Date Picker Logic ----------
-        const dateSelected = document.getElementById('date-selected');
-        const dateItems = document.getElementById('date-items');
-        const displayMonthYear = document.getElementById('display-month-year');
-        const daysGrid = document.getElementById('days-grid');
-        const hiddenDate = document.getElementById('c-date');
-        const dateSelectedText = document.getElementById('date-selected-text');
-        const prevMonthBtn = document.getElementById('prev-month');
-        const nextMonthBtn = document.getElementById('next-month');
-
-        let currentDate = new Date();
-        let currentMonth = currentDate.getMonth();
-        let currentYear = currentDate.getFullYear();
-
-        const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-        function renderCalendar(month, year) {
-            const firstDay = new Date(year, month, 1).getDay(); // 0 = Sunday
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            
-            displayMonthYear.innerText = `${monthNames[month]} ${year}`;
-
-            let gridHtml = '';
-            // Empty cells before first day
-            for (let i = 0; i < firstDay; i++) {
-                gridHtml += '<div class="day-cell empty"></div>';
-            }
-            // Days of month
-            const today = new Date();
-            const todayDate = today.getDate();
-            const todayMonth = today.getMonth();
-            const todayYear = today.getFullYear();
-
-            for (let d = 1; d <= daysInMonth; d++) {
-                const cellDate = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-                const isToday = (d === todayDate && month === todayMonth && year === todayYear);
-                const isPast = (year < todayYear) || (year === todayYear && month < todayMonth) || (year === todayYear && month === todayMonth && d < todayDate);
-                const isSelected = (hiddenDate.value === cellDate);
-                let classes = 'day-cell';
-                if (isPast) classes += ' disabled';
-                if (isToday) classes += ' today';
-                if (isSelected) classes += ' selected';
-                gridHtml += `<div class="${classes}" data-date="${cellDate}">${d}</div>`;
-            }
-            daysGrid.innerHTML = gridHtml;
-
-            // Add click listeners to day cells
-            document.querySelectorAll('.day-cell:not(.empty):not(.disabled)').forEach(cell => {
-                cell.addEventListener('click', () => {
-                    const date = cell.getAttribute('data-date');
-                    selectDate(date);
-                    dateItems.classList.remove('show');
-                    dateSelected.classList.remove('open');
-                });
-            });
-        }
-
-        function selectDate(date) {
-            hiddenDate.value = date;
-            // Format for display: DD MMM YYYY
-            const d = new Date(date + 'T00:00:00');
-            const display = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, ' ');
-            dateSelectedText.innerText = display;
-            // Re-render to update selected class
-            renderCalendar(currentMonth, currentYear);
-            // Trigger change event for time availability
-            const event = new Event('change', { bubbles: true });
-            hiddenDate.dispatchEvent(event);
-        }
-
-        prevMonthBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            currentMonth--;
-            if (currentMonth < 0) {
-                currentMonth = 11;
-                currentYear--;
-            }
-            renderCalendar(currentMonth, currentYear);
-        });
-
-        nextMonthBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            currentMonth++;
-            if (currentMonth > 11) {
-                currentMonth = 0;
-                currentYear++;
-            }
-            renderCalendar(currentMonth, currentYear);
-        });
-
-        dateSelected.addEventListener('click', (e) => {
-            e.stopPropagation();
-            dateItems.classList.toggle('show');
-            dateSelected.classList.toggle('open');
-            // Ensure calendar is rendered for current month/year based on selected date or current date
-            if (hiddenDate.value) {
-                const selected = new Date(hiddenDate.value + 'T00:00:00');
-                currentMonth = selected.getMonth();
-                currentYear = selected.getFullYear();
-            } else {
-                const today = new Date();
-                currentMonth = today.getMonth();
-                currentYear = today.getFullYear();
-            }
-            renderCalendar(currentMonth, currentYear);
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!dateSelected.contains(e.target) && !dateItems.contains(e.target)) {
-                dateItems.classList.remove('show');
-                dateSelected.classList.remove('open');
-            }
-        });
-
-        // Initialize calendar with current month/year
+        // Initial calendar render
         renderCalendar(currentMonth, currentYear);
 
-        // ---------- Custom Time Dropdown ----------
-        const timeSelected = document.getElementById('time-selected');
-        const timeItems = document.getElementById('time-items');
-        const timeOptionsContainer = document.getElementById('time-options-container');
-        const timeHiddenSelect = document.getElementById('c-time');
-        const timeSelectedText = document.getElementById('time-selected-text');
-        const skeleton = document.getElementById('time-skeleton');
-
-        // Generate time options (9:00 AM to 9:00 PM in 30 min increments)
-        const timeList = [];
-        for (let h = 9; h <= 21; h++) {
-            for (let m = 0; m < 60; m += 30) {
-                if (h === 21 && m === 30) continue;
-                const hourStr = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
-                const period = h < 12 ? 'AM' : 'PM';
-                const hour12 = h % 12 || 12;
-                const minute = m === 0 ? '00' : '30';
-                const display = `${hour12}:${minute} ${period}`;
-                timeList.push({ value: hourStr, display: display });
-            }
-        }
-
-        // Populate hidden select
-        timeList.forEach(t => {
-            const option = document.createElement('option');
-            option.value = t.value;
-            option.textContent = t.display;
-            timeHiddenSelect.appendChild(option);
-        });
-
-        function renderTimeOptions(disabledTimes = []) {
-            timeOptionsContainer.innerHTML = '';
-            timeList.forEach(t => {
-                const optionDiv = document.createElement('div');
-                optionDiv.className = 'select-option';
-                optionDiv.setAttribute('data-value', t.value);
-                if (timeHiddenSelect.value === t.value) {
-                    optionDiv.classList.add('selected');
-                }
-                const isDisabled = disabledTimes.includes(t.value);
-                if (isDisabled) {
-                    optionDiv.classList.add('disabled');
-                }
-                optionDiv.innerHTML = `<i class="fa-regular fa-clock"></i><span class="option-text">${t.display}</span>`;
-                if (!isDisabled) {
-                    optionDiv.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        selectTime(t.value, t.display);
-                        timeItems.classList.remove('show');
-                        timeSelected.classList.remove('open');
-                    });
-                }
-                timeOptionsContainer.appendChild(optionDiv);
-            });
-        }
-
-        function selectTime(value, display) {
-            timeHiddenSelect.value = value;
-            timeSelectedText.innerText = display;
-            // Update selected class
-            document.querySelectorAll('#time-options-container .select-option').forEach(opt => opt.classList.remove('selected'));
-            const selectedOpt = Array.from(document.querySelectorAll('#time-options-container .select-option')).find(opt => opt.getAttribute('data-value') === value);
-            if (selectedOpt) selectedOpt.classList.add('selected');
-        }
-
-        // Initial render (no disabled times)
-        renderTimeOptions();
-
-        timeSelected.addEventListener('click', (e) => {
-            e.stopPropagation();
-            timeItems.classList.toggle('show');
-            timeSelected.classList.toggle('open');
-        });
-
-        document.addEventListener('click', (e) => {
-            if (!timeSelected.contains(e.target) && !timeItems.contains(e.target)) {
-                timeItems.classList.remove('show');
-                timeSelected.classList.remove('open');
-            }
-        });
-
-        // ---------- Availability ----------
-        async function updateTimeAvailability(date) {
-            if (!date) return;
-            // Show skeleton
-            skeleton.classList.remove('hidden');
-            timeItems.classList.remove('show');
-            timeSelected.classList.remove('open');
-
-            try {
-                const snapshot = await db.collection('bookings').where('date', '==', date).get();
-                const bookedTimes = [];
-                snapshot.forEach(doc => bookedTimes.push(doc.data().time));
-
-                const today = new Date().toISOString().split('T')[0];
-                const now = new Date();
-                const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-                const disabledTimes = timeList.filter(t => {
-                    const time = t.value;
-                    const timeMinutes = timeToMinutes(time);
-                    // Disable if booked
-                    if (bookedTimes.some(bt => {
-                        const btMinutes = timeToMinutes(bt);
-                        return Math.abs(btMinutes - timeMinutes) < 60;
-                    })) {
-                        return true;
-                    }
-                    // If date is today, disable past times
-                    if (date === today && timeMinutes < currentMinutes) {
-                        return true;
-                    }
-                    return false;
-                }).map(t => t.value);
-
-                renderTimeOptions(disabledTimes);
-                // If currently selected time is disabled, clear selection
-                if (timeHiddenSelect.value && disabledTimes.includes(timeHiddenSelect.value)) {
-                    timeHiddenSelect.value = '';
-                    timeSelectedText.innerText = 'SELECT TIME';
-                }
-            } catch (error) {
-                console.error("Error fetching availability:", error);
-            } finally {
-                skeleton.classList.add('hidden');
-            }
-        }
-
-        hiddenDate.addEventListener('change', async function(e) {
-            const date = e.target.value;
-            await updateTimeAvailability(date);
-        });
-
-        function timeToMinutes(time) {
-            const [h, m] = time.split(':').map(Number);
-            return h * 60 + m;
-        }
-
-        async function isTimeSlotAvailable(date, time) {
-            const selectedMinutes = timeToMinutes(time);
-            const snapshot = await db.collection('bookings').where('date', '==', date).get();
-            if (snapshot.empty) return true;
-            for (const doc of snapshot.docs) {
-                const bookingTime = doc.data().time;
-                const bookingMinutes = timeToMinutes(bookingTime);
-                if (Math.abs(bookingMinutes - selectedMinutes) < 60) {
-                    return false;
-                }
-            }
-            const today = new Date().toISOString().split('T')[0];
-            if (date === today) {
-                const now = new Date();
-                const currentMinutes = now.getHours() * 60 + now.getMinutes();
-                if (selectedMinutes < currentMinutes) return false;
-            }
-            return true;
-        }
-
-        // Toast function
-        function showToast(message, type = 'success') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'}"></i> <span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 10);
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 400);
-            }, 4000);
-        }
-
-        // Ticket modal functions
-        function closeTicketModal() {
-            const modal = document.getElementById('ticket-modal');
-            const card = document.getElementById('ticket-modal-card');
-            modal.classList.add('opacity-0');
-            card.classList.remove('scale-100');
-            card.classList.add('scale-90');
-            setTimeout(() => { modal.classList.add('hidden'); }, 300);
-        }
-
-        function showTicketModal(bookingData, bookingId) {
-            document.getElementById('ticket-id').innerText = `#${bookingId.slice(-8)}`;
-            document.getElementById('ticket-name').innerText = bookingData.name;
-            document.getElementById('ticket-phone').innerText = bookingData.phone;
-            document.getElementById('ticket-email').innerText = bookingData.email;
-            document.getElementById('ticket-service').innerText = bookingData.serviceTitle;
-            document.getElementById('ticket-price').innerText = `₹${bookingData.servicePrice}`;
-            document.getElementById('ticket-date').innerText = bookingData.date;
-            const time24 = bookingData.time;
-            const [h, m] = time24.split(':');
-            const period = h < 12 ? 'AM' : 'PM';
-            const hour12 = h % 12 || 12;
-            document.getElementById('ticket-time').innerText = `${hour12}:${m} ${period}`;
-            document.getElementById('ticket-msg').innerText = bookingData.message || '-';
-
-            const modal = document.getElementById('ticket-modal');
-            const card = document.getElementById('ticket-modal-card');
-            modal.classList.remove('hidden');
-            setTimeout(() => { 
-                modal.classList.remove('opacity-0'); 
-                card.classList.remove('scale-90'); 
-                card.classList.add('scale-100'); 
-            }, 10);
-        }
-
-        window.downloadTicket = function() {
-            const ticketContent = document.getElementById('ticket-content');
-            html2canvas(ticketContent, { scale: 2, backgroundColor: '#0f0f0f' }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'NEX-ticket.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                showToast('Ticket image downloaded!', 'success');
-            });
-        };
-
-        // Generate random booking ID
-        function generateBookingId() {
-            return 'NEX' + Math.floor(10000 + Math.random() * 90000);
-        }
-
-        // Form submit handler
-        document.getElementById('contact-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const nameEl = document.getElementById('c-name');
-            const phoneEl = document.getElementById('c-phone');
-            const emailEl = document.getElementById('c-email');
-            const serviceEl = document.getElementById('c-service'); // hidden select
-            const dateEl = document.getElementById('c-date'); // hidden input
-            const timeEl = document.getElementById('c-time'); // hidden select for time
-            const msgEl = document.getElementById('c-msg');
-            const availabilityMsg = document.getElementById('availability-msg');
-            const submitBtn = document.getElementById('booking-submit-btn');
-            const spinner = document.getElementById('btn-spinner');
-
-            const nameErr = document.getElementById('name-error');
-            const phoneErr = document.getElementById('phone-error');
-            const emailErr = document.getElementById('email-error');
-            const serviceErr = document.getElementById('service-error');
-            const dateErr = document.getElementById('date-error');
-            const timeErr = document.getElementById('time-error');
-
-            const nameVal = nameEl.value.trim();
-            const phoneVal = phoneEl.value.trim();
-            const emailVal = emailEl.value.trim();
-            const serviceVal = serviceEl.value;
-            const dateVal = dateEl.value;
-            const timeVal = timeEl.value;
-            const msgVal = msgEl.value.trim();
-
-            let isValid = true;
-
-            [nameEl, phoneEl, emailEl].forEach(el => {
-                el.classList.remove('input-error', 'border-brand-red');
-                el.classList.add('border-white/10');
-            });
-            // Remove error from custom selects
-            document.querySelector('#custom-service-select .select-selected').classList.remove('input-error');
-            document.querySelector('#custom-date-select .select-selected').classList.remove('input-error');
-            document.querySelector('#custom-time-select .select-selected').classList.remove('input-error');
-            [nameErr, phoneErr, emailErr, serviceErr, dateErr, timeErr].forEach(el => el.classList.add('hidden'));
-            availabilityMsg.classList.add('hidden');
-
-            if (!nameVal) { nameEl.classList.add('input-error'); nameErr.classList.remove('hidden'); isValid = false; }
-            if (!phoneVal || !/^\d{10,}$/.test(phoneVal)) { phoneEl.classList.add('input-error'); phoneErr.classList.remove('hidden'); isValid = false; }
-            if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) { emailEl.classList.add('input-error'); emailErr.classList.remove('hidden'); isValid = false; }
-            if (!serviceVal) { 
-                document.querySelector('#custom-service-select .select-selected').classList.add('input-error'); 
-                serviceErr.classList.remove('hidden'); 
-                isValid = false; 
-            }
-            if (!dateVal) { 
-                document.querySelector('#custom-date-select .select-selected').classList.add('input-error'); 
-                dateErr.classList.remove('hidden'); 
-                isValid = false; 
-            }
-            if (!timeVal) { 
-                document.querySelector('#custom-time-select .select-selected').classList.add('input-error'); 
-                timeErr.classList.remove('hidden'); 
-                isValid = false; 
-            }
-
-            if (!isValid) return;
-
-            // Show loading
-            submitBtn.querySelector('span').classList.add('hidden');
-            spinner.classList.remove('hidden');
-            submitBtn.disabled = true;
-
-            // Check availability (double-check)
-            const available = await isTimeSlotAvailable(dateVal, timeVal);
-            if (!available) {
-                availabilityMsg.classList.remove('hidden');
-                availabilityMsg.innerHTML = 'This time slot is already booked. Please select another time.';
-                document.querySelector('#custom-time-select .select-selected').classList.add('input-error');
-                submitBtn.querySelector('span').classList.remove('hidden');
-                spinner.classList.add('hidden');
-                submitBtn.disabled = false;
-                showToast('Slot unavailable, choose another time', 'error');
-                return;
-            }
-
-            // Get service details
-            const selectedService = planData[serviceVal];
-            const serviceTitle = selectedService ? selectedService.title : serviceVal;
-            const servicePrice = selectedService ? selectedService.price : '0';
-
-            // Generate booking ID
-            const bookingId = generateBookingId();
-
-            // Save to Firestore
-            try {
-                const docRef = await db.collection('bookings').add({
-                    name: nameVal,
-                    phone: phoneVal,
-                    email: emailVal,
-                    service: serviceVal,
-                    serviceTitle: serviceTitle,
-                    servicePrice: servicePrice,
-                    date: dateVal,
-                    time: timeVal,
-                    message: msgVal,
-                    bookingId: bookingId,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                // --- EmailJS integration with new template ---
-                const serviceID = "service_54hp8dd";
-                const templateID = "template_ou3pk5a"; 
-                const templateParams = {
-                    user_email: emailVal,
-                    customer_name: nameVal,
-                    booking_id: bookingId,
-                    booking_date: dateVal,
-                    booking_time: timeVal,
-                    services_booked: serviceTitle,
-                    total_price: servicePrice,
-                    message: msgVal || "No special request"
-                };
-
-                await emailjs.send(serviceID, templateID, templateParams);
-                // ---------------------------------
-
-                // Reset form
-                document.getElementById('contact-form').reset();
-                // Reset custom selects
-                hiddenSelect.value = '';
-                selectedTextSpan.innerText = 'SELECT SERVICE';
-                renderOptions('');
-                hiddenDate.value = '';
-                dateSelectedText.innerText = 'SELECT DATE';
-                // Re-render calendar to clear selected
-                const today = new Date();
-                currentMonth = today.getMonth();
-                currentYear = today.getFullYear();
-                renderCalendar(currentMonth, currentYear);
-                timeHiddenSelect.value = '';
-                timeSelectedText.innerText = 'SELECT TIME';
-                renderTimeOptions([]);
-
-                // Show ticket popup
-                const bookingData = { 
-                    name: nameVal, 
-                    phone: phoneVal, 
-                    email: emailVal, 
-                    serviceTitle: serviceTitle,
-                    servicePrice: servicePrice,
-                    date: dateVal, 
-                    time: timeVal, 
-                    message: msgVal 
-                };
-                showTicketModal(bookingData, docRef.id);
-
-                showToast('Booking confirmed! Ticket sent to email.', 'success');
-
-            } catch (error) {
-                console.error("Error adding booking: ", error);
-                availabilityMsg.classList.remove('hidden');
-                availabilityMsg.innerHTML = 'Booking failed. Please try again.';
-                showToast('Booking failed, try again', 'error');
-            } finally {
-                submitBtn.querySelector('span').classList.remove('hidden');
-                spinner.classList.add('hidden');
-                submitBtn.disabled = false;
-            }
-        });
-
-        // Set min date to today (handled by calendar disabled logic)
+        // Initialize total display
+        updateTotalDisplay();
     </script>
 </body>
 </html>
