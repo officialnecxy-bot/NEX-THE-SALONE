@@ -62,6 +62,19 @@
             z-index: 0;
         }
 
+        /* New background image layer */
+        .bg-dim-image {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url('https://i.ibb.co/xtsYBSHY/img.png');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.15;
+            filter: blur(4px);
+            pointer-events: none;
+            z-index: 0;
+        }
+
         .bento-card {
             background: rgba(20, 20, 20, 0.4);
             backdrop-filter: blur(20px);
@@ -535,6 +548,8 @@
 <body class="antialiased pb-20 selection:bg-brand-red selection:text-white">
 
     <div class="bg-noise"></div>
+    <!-- New dim background image -->
+    <div class="bg-dim-image"></div>
     
     <div class="fixed top-0 left-0 w-[500px] h-[500px] bg-brand-red/10 rounded-full blur-[128px] -translate-x-1/2 -translate-y-1/2 pointer-events-none z-0"></div>
     <div class="fixed bottom-0 right-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[128px] translate-x-1/3 translate-y-1/3 pointer-events-none z-0"></div>
@@ -542,11 +557,15 @@
     <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
 
-    <!-- NAVBAR (header unchanged) -->
+    <!-- NAVBAR with larger logo and added VOX title -->
     <div class="fixed top-6 left-0 right-0 z-50 px-4 flex justify-center" data-aos="fade-down" data-aos-duration="1000">
         <nav class="bg-black/60 backdrop-blur-2xl border border-white/5 rounded-full px-8 py-3 flex items-center justify-between shadow-2xl w-full max-w-7xl">
-            <a href="#" class="flex flex-col leading-none select-none group">
-                <span class="text-4xl font-heading tracking-wide text-white group-hover:text-brand-red transition-colors duration-300">THE NEX</span>
+            <!-- Logo section: bigger image + VOX text + tagline -->
+            <a href="#" class="flex flex-col items-start select-none group">
+                <div class="flex items-center gap-3">
+                    <img src="https://i.ibb.co/QvGPqxp5/img.png" alt="NEX Logo" class="h-12 w-auto object-contain"> <!-- increased from h-10 to h-12 -->
+                    <span class="text-3xl md:text-4xl font-heading text-white group-hover:text-brand-red transition-colors">VOX</span>
+                </div>
                 <span class="text-[0.6rem] font-bold text-brand-red tracking-[0.38em] uppercase pl-0.5 group-hover:text-white transition-colors duration-300">WHERE STYLE MEETS EDGE</span>
             </a>
             
@@ -943,6 +962,7 @@
 
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <script>
+        // (All existing JavaScript remains exactly the same)
         // Initialize EmailJS – Public Key from user
         (function() {
             emailjs.init("qE3Vr3MC04BfiP8OE"); 
