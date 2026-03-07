@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>THE NEX | THE SALON</title>
     
-    <!-- PWA Manifest (unchanged) -->
+    <!-- PWA Manifest -->
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIk5FWCBTYWxvbiIsCiAgInNob3J0X25hbWUiOiAiTkVYIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwMzAzMDMiLAogICJ0aGVtZV9jb2xvciI6ICIjRkYwMDJFIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pLmliYi5jby9RdnZ3Y2ZWL2ltZy5wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -22,6 +22,9 @@
 
     <!-- html2canvas for ticket download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Razorpay -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <script>
         tailwind.config = {
@@ -49,7 +52,7 @@
     </script>
 
     <style>
-        /* ALL EXISTING STYLES EXACTLY AS BEFORE – plus new toggle styles */
+        /* ALL EXISTING STYLES – plus new toggle styles and payment modal */
         body {
             background-color: #030303;
             color: white;
@@ -579,6 +582,31 @@
         input:checked + .slider:before {
             transform: translateX(20px);
         }
+        /* Payment modal styles */
+        #payment-modal .modal-inner {
+            transition: all 0.3s;
+        }
+        .payment-option {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .payment-option:hover {
+            background: rgba(255,0,46,0.1);
+            border-color: #FF002E;
+        }
+        .payment-option.selected {
+            background: rgba(255,0,46,0.2);
+            border-color: #FF002E;
+            box-shadow: 0 0 20px rgba(255,0,46,0.2);
+        }
+        .razorpay-logo {
+            height: 30px;
+            width: auto;
+        }
     </style>
 </head>
 <body class="antialiased pb-20 selection:bg-brand-red selection:text-white">
@@ -592,13 +620,13 @@
     <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
 
-    <!-- NAVBAR (logo updated) -->
+    <!-- NAVBAR (logo updated from settings) -->
     <div class="fixed top-6 left-0 right-0 z-50 px-4 flex justify-center" data-aos="fade-down" data-aos-duration="1000">
         <nav class="bg-black/60 backdrop-blur-2xl border border-white/5 rounded-full px-8 py-3 flex items-center justify-between shadow-2xl w-full max-w-7xl">
             <a href="#" class="flex flex-col items-start select-none group">
                 <div class="flex items-center gap-3">
-                    <!-- NEW LOGO URL -->
-                    <img src="https://i.ibb.co/1pHWzNN/img.png" alt="NEX Logo" class="h-12 w-auto object-contain">
+                    <!-- LOGO URL from settings (will be updated via JS) -->
+                    <img id="navbar-logo" src="https://i.ibb.co/1pHWzNN/img.png" alt="NEX Logo" class="h-12 w-auto object-contain">
                     <span class="text-3xl md:text-4xl font-heading text-white group-hover:text-brand-red transition-colors">THE NEX</span>
                 </div>
                 <span class="text-[0.6rem] font-bold text-brand-red tracking-[0.38em] uppercase pl-0.5 group-hover:text-white transition-colors duration-300">WHERE STYLE MEETS EDGE</span>
@@ -611,7 +639,7 @@
 
             <div class="flex items-center gap-3">
                 <div onclick="toggleProfile()" class="w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden border-2 border-brand-red/50 cursor-pointer hover:scale-105 transition-transform">
-                    <img src="https://i.ibb.co/pjg7GrBY/img.png" alt="Shantanu" class="w-full h-full object-cover">
+                    <img id="profile-nav-img" src="https://i.ibb.co/pjg7GrBY/img.png" alt="Shantanu" class="w-full h-full object-cover">
                 </div>
                 <a href="#contact" class="hidden md:block bg-brand-red text-white text-xs font-bold px-6 py-3 rounded-full uppercase btn-shine hover:shadow-[0_0_30px_rgba(255,0,46,0.4)] transition-all">Book Now</a>
                 <button onclick="toggleMenu()" class="md:hidden text-2xl text-white relative z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-brand-red/20 transition-all">
@@ -621,14 +649,14 @@
         </nav>
     </div>
 
-    <!-- MOBILE MENU (unchanged) -->
+    <!-- MOBILE MENU (updated with dynamic profile image) -->
     <div id="mobile-menu" class="fixed inset-0 z-[40] flex flex-col justify-center items-center gap-8 p-8">
         <button onclick="toggleMenu()" class="absolute top-10 right-8 text-4xl text-gray-500 hover:text-white transition-colors w-14 h-14 rounded-full bg-white/5 backdrop-blur-sm border border-white/10 flex items-center justify-center hover:bg-brand-red/30"><i class="fa-solid fa-xmark"></i></button>
         
         <div onclick="toggleProfile()" class="flex flex-col items-center gap-4 cursor-pointer group mb-4">
             <div class="relative">
                 <div class="absolute inset-0 rounded-full bg-brand-red blur-xl opacity-50 group-hover:opacity-80 transition"></div>
-                <img src="https://i.ibb.co/pjg7GrBY/img.png" alt="Profile" class="w-24 h-24 rounded-full border-2 border-brand-red relative z-10 object-cover">
+                <img id="mobile-profile-img" src="https://i.ibb.co/pjg7GrBY/img.png" alt="Profile" class="w-24 h-24 rounded-full border-2 border-brand-red relative z-10 object-cover">
             </div>
             <div class="text-center">
                 <p class="text-2xl font-heading text-white">SHANTANU J.</p>
@@ -647,21 +675,20 @@
         <div class="w-24 h-px bg-gradient-to-r from-transparent via-brand-red to-transparent"></div>
 
         <div class="flex gap-6 mt-4">
-            <a href="https://instagram.com/imvilliambutcher" target="_blank" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150"><i class="fa-brands fa-instagram"></i></a>
-            <a href="https://wa.me/917057193228" target="_blank" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150"><i class="fa-brands fa-whatsapp"></i></a>
-            <a href="https://t.me/i_necxy" target="_blank" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150"><i class="fa-brands fa-telegram"></i></a>
-            <!-- Direct call icon added -->
-            <a href="tel:7057193228" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150"><i class="fa-solid fa-phone"></i></a>
+            <a href="#" target="_blank" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150 social-link" id="mobile-instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" target="_blank" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150 social-link" id="mobile-whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="#" target="_blank" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150 social-link" id="mobile-telegram"><i class="fa-brands fa-telegram"></i></a>
+            <a href="#" class="text-3xl text-gray-500 hover:text-brand-red transition-all hover:scale-150 social-link" id="mobile-phone"><i class="fa-solid fa-phone"></i></a>
         </div>
     </div>
 
-    <!-- PROFILE POPUP (unchanged) -->
+    <!-- PROFILE POPUP (dynamic from settings) -->
     <div id="profile-popup" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-xl hidden flex justify-center items-center opacity-0 transition-opacity duration-300">
         <div class="bento-card p-8 w-[90%] max-w-md relative transform scale-90 transition-transform duration-300 border-white/10 max-h-[90vh] overflow-y-auto" id="profile-card">
             <button onclick="toggleProfile()" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl transition-colors"><i class="fa-solid fa-xmark"></i></button>
             <div class="text-center">
                 <div class="w-28 h-28 rounded-full mx-auto border-2 border-brand-red/50 p-1 mb-4 shadow-[0_0_30px_rgba(255,0,46,0.2)]">
-                    <img src="https://i.ibb.co/pjg7GrBY/img.png" class="w-full h-full rounded-full object-cover">
+                    <img id="profile-img" src="https://i.ibb.co/pjg7GrBY/img.png" class="w-full h-full rounded-full object-cover">
                 </div>
                 <h3 class="text-4xl font-heading text-white mb-2">SHANTANU JAGDALE</h3>
                 <p class="text-brand-red text-xs font-bold uppercase tracking-[0.3em] mb-6">Master Barber</p>
@@ -673,7 +700,7 @@
                         <li class="flex justify-between text-brand-red"><span>Monday</span> <span class="font-bold">CLOSED</span></li>
                     </ul>
                 </div>
-                <div class="mb-5 rounded-2xl overflow-hidden border border-white/10 h-40">
+                <div class="mb-5 rounded-2xl overflow-hidden border border-white/10 h-40" id="map-container">
                     <iframe class="w-full h-full"
                         src="https://www.google.com/maps?q=Barshi+Naka,+Dharashiv,+Maharashtra+413501&output=embed"
                         allowfullscreen=""
@@ -681,12 +708,12 @@
                         referrerpolicy="no-referrer-when-downgrade">
                     </iframe>
                 </div>
-                <div class="grid gap-3">
-                    <a href="tel:7057193228" class="flex items-center justify-between bg-white/5 hover:bg-brand-red text-white p-4 rounded-xl transition-all group border border-white/5 hover:border-brand-red"><span class="font-bold flex items-center gap-3"><i class="fa-solid fa-phone"></i> 7057193228</span><i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i></a>
-                    <a href="https://wa.me/917057193228?text=Hi%20Shantanu!%20I%20want%20to%20book%20an%20appointment%20at%20NEX." target="_blank" class="flex items-center justify-between bg-white/5 hover:bg-[#25D366] text-white p-4 rounded-xl transition-all group border border-white/5 hover:border-[#25D366]"><span class="font-bold flex items-center gap-3"><i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp</span><i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i></a>
-                    <a href="https://instagram.com/vox.salon" target="_blank" class="flex items-center justify-between bg-white/5 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 text-white p-4 rounded-xl transition-all group border border-white/5 hover:border-purple-500"><span class="font-bold flex items-center gap-3"><i class="fa-brands fa-instagram text-xl"></i> @vox.salon</span><i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i></a>
+                <div class="grid gap-3" id="profile-contact-links">
+                    <a href="tel:7057193228" class="flex items-center justify-between bg-white/5 hover:bg-brand-red text-white p-4 rounded-xl transition-all group border border-white/5 hover:border-brand-red"><span class="font-bold flex items-center gap-3"><i class="fa-solid fa-phone"></i> <span id="profile-phone">7057193228</span></span><i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i></a>
+                    <a href="https://wa.me/917057193228?text=Hi%20Shantanu!%20I%20want%20to%20book%20an%20appointment%20at%20NEX." target="_blank" class="flex items-center justify-between bg-white/5 hover:bg-[#25D366] text-white p-4 rounded-xl transition-all group border border-white/5 hover:border-[#25D366]" id="profile-wa"><span class="font-bold flex items-center gap-3"><i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp</span><i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i></a>
+                    <a href="https://instagram.com/vox.salon" target="_blank" class="flex items-center justify-between bg-white/5 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 text-white p-4 rounded-xl transition-all group border border-white/5 hover:border-purple-500" id="profile-ig"><span class="font-bold flex items-center gap-3"><i class="fa-brands fa-instagram text-xl"></i> <span id="profile-ig-handle">@vox.salon</span></span><i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i></a>
                     <div class="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
-                        <span class="font-bold flex items-center gap-3"><i class="fa-solid fa-location-dot"></i> Barshi Naka, Dharashiv 413501</span>
+                        <span class="font-bold flex items-center gap-3"><i class="fa-solid fa-location-dot"></i> <span id="profile-address">Barshi Naka, Dharashiv 413501</span></span>
                     </div>
                 </div>
             </div>
@@ -705,7 +732,7 @@
             <button id="service-contact-btn" class="w-full bg-white/5 text-white font-heading text-xl py-4 rounded-xl hover:text-black transition-all mt-3 border border-white/10 flex items-center justify-center gap-3 group hover:scale-105">BOOK NOW <i class="fa-solid fa-calendar-check group-hover:scale-110 transition-transform"></i></button>
         </div>
     </div>
-    
+
     <!-- MESSAGE SUCCESS MODAL (unchanged) -->
     <div id="success-modal" class="fixed inset-0 z-[300] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-md opacity-0 transition-opacity duration-300">
         <div class="bento-card w-full max-w-sm p-10 relative transform scale-90 transition-transform duration-300 flex flex-col items-center text-center border-green-500/30 shadow-[0_0_60px_rgba(34,197,94,0.2)]" id="success-modal-card">
@@ -746,13 +773,15 @@
                     <div class="ticket-field"><span class="text-gray-400">PHONE</span><span id="ticket-phone" class="font-bold text-white">7057193228</span></div>
                     <div class="ticket-field"><span class="text-gray-400">EMAIL</span><span id="ticket-email" class="font-bold text-white">guest@vox.com</span></div>
                     <div class="ticket-field"><span class="text-gray-400">SERVICE</span><span id="ticket-service" class="font-bold text-white">Haircut</span></div>
+                    <div class="ticket-field"><span class="text-gray-400">STAFF</span><span id="ticket-staff" class="font-bold text-white">Anyone</span></div>
                     <div class="ticket-field"><span class="text-gray-400">PRICE</span><span id="ticket-price" class="font-bold text-white">₹500</span></div>
                     <div class="ticket-field"><span class="text-gray-400">DATE</span><span id="ticket-date" class="font-bold text-white">2025-04-10</span></div>
                     <div class="ticket-field"><span class="text-gray-400">TIME</span><span id="ticket-time" class="font-bold text-white">10:30 AM</span></div>
                     <div class="ticket-field"><span class="text-gray-400">MESSAGE</span><span id="ticket-msg" class="font-bold text-white truncate max-w-[150px]">-</span></div>
+                    <div class="ticket-field"><span class="text-gray-400">PAYMENT</span><span id="ticket-payment" class="font-bold text-green-500">After Service</span></div>
                 </div>
                 <div class="mt-6 pt-4 border-t border-white/10 text-center">
-                    <p class="text-[8px] text-gray-500 tracking-wider">Barshi Naka, Dharashiv | 7057193228</p>
+                    <p class="text-[8px] text-gray-500 tracking-wider" id="ticket-footer">Barshi Naka, Dharashiv | 7057193228</p>
                 </div>
             </div>
             <div class="flex gap-3 mt-6">
@@ -780,12 +809,44 @@
         </div>
     </div>
 
-    <!-- HERO SECTION (smaller button, updated icons) -->
+    <!-- PAYMENT MODAL (NEW) -->
+    <div id="payment-modal" class="fixed inset-0 z-[600] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="bento-card w-full max-w-md p-8 relative transform scale-90 transition-transform duration-300 border border-white/10" id="payment-modal-card">
+            <button onclick="closePaymentModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-3xl font-heading text-center text-white mb-6">COMPLETE BOOKING</h3>
+            <div class="space-y-4 mb-6">
+                <div class="payment-option" id="pay-online-option" onclick="selectPaymentMethod('online')">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-credit-card text-brand-red"></i> Pay Online</span>
+                        <span class="text-sm text-gray-400">via Razorpay</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Instant confirmation. Secure payment.</p>
+                </div>
+                <div class="payment-option" id="pay-after-option" onclick="selectPaymentMethod('after')">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-hand-holding-dollar text-green-500"></i> Pay After Service</span>
+                        <span class="text-sm text-gray-400">Cash / UPI / Card</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">Book now, pay at salon after service.</p>
+                </div>
+            </div>
+            <div id="payment-details" class="bg-white/5 rounded-xl p-4 mb-6">
+                <div class="flex justify-between text-sm"><span class="text-gray-400">Service:</span> <span id="payment-service-name">-</span></div>
+                <div class="flex justify-between text-sm"><span class="text-gray-400">Staff:</span> <span id="payment-staff">-</span></div>
+                <div class="flex justify-between text-sm"><span class="text-gray-400">Date & Time:</span> <span id="payment-datetime">-</span></div>
+                <div class="flex justify-between text-sm"><span class="text-gray-400">Coupon:</span> <span id="payment-coupon">None</span></div>
+                <div class="flex justify-between text-xl font-bold mt-3 pt-3 border-t border-white/10"><span>Total:</span> <span id="payment-total">₹0</span></div>
+            </div>
+            <button id="confirm-payment-btn" class="w-full bg-brand-red text-white font-heading text-xl py-4 rounded-xl hover:bg-white hover:text-black transition-all btn-shine" onclick="processPayment()">Confirm & Pay</button>
+        </div>
+    </div>
+
+    <!-- HERO SECTION (dynamic images) -->
     <section class="pt-32 px-4 max-w-[1600px] mx-auto mb-10">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div class="lg:col-span-8 bento-card p-10 md:p-20 flex flex-col justify-center min-h-[550px] relative overflow-hidden group border-white/10" data-aos="fade-right" data-aos-duration="1000">
                 <div class="absolute inset-0 z-0 opacity-40 group-hover:opacity-50 transition-all duration-700 scale-105 group-hover:scale-100">
-                    <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop" class="w-full h-full object-cover grayscale mix-blend-overlay">
+                    <img id="hero-background" src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop" class="w-full h-full object-cover grayscale mix-blend-overlay">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-brand-red/20 mix-blend-multiply"></div>
                     <div class="absolute top-4 left-4 flex items-center gap-2 opacity-50">
                         <div class="w-3 h-3 rounded-full bg-brand-red animate-pulse box-shadow-[0_0_10px_red]"></div>
@@ -810,19 +871,17 @@
                     <p class="text-gray-300 max-w-lg text-lg leading-relaxed mb-10 drop-shadow-lg font-medium tracking-wide" data-aos="fade-up" data-aos-delay="400">Expert cuts, beard sculpting & color by <span class="text-white font-bold">Shantanu Jagdale</span>. Experience the art of grooming.</p>
                     
                     <div class="flex flex-wrap items-center gap-4" data-aos="fade-up" data-aos-delay="600">
-                        <!-- Smaller "View Services" button -->
                         <a href="#pricing" class="bg-white text-black font-heading text-lg px-8 py-3 rounded-full hover:bg-brand-red hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] hover:shadow-[0_0_30px_rgba(255,0,46,0.4)] btn-shine">View Services</a>
-                        <!-- New icons: call, instagram, whatsapp (telegram removed) -->
-                        <a href="tel:7057193228" class="text-white/50 hover:text-brand-red text-3xl transition-all hover-rotate"><i class="fa-solid fa-phone"></i></a>
-                        <a href="https://instagram.com/imvilliambutcher" target="_blank" class="text-white/50 hover:text-brand-red text-3xl transition-all hover-rotate"><i class="fa-brands fa-instagram"></i></a>
-                        <a href="https://wa.me/917057193228" target="_blank" class="text-white/50 hover:text-brand-red text-3xl transition-all hover-rotate"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="#" class="text-white/50 hover:text-brand-red text-3xl transition-all hover-rotate social-link" id="hero-phone"><i class="fa-solid fa-phone"></i></a>
+                        <a href="#" target="_blank" class="text-white/50 hover:text-brand-red text-3xl transition-all hover-rotate social-link" id="hero-instagram"><i class="fa-brands fa-instagram"></i></a>
+                        <a href="#" target="_blank" class="text-white/50 hover:text-brand-red text-3xl transition-all hover-rotate social-link" id="hero-whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
                     </div>
                 </div>
             </div>
 
             <div class="lg:col-span-4 flex flex-col gap-6">
                 <div class="bento-card flex-1 relative min-h-[300px] overflow-hidden group border-white/10" data-aos="fade-down-left" data-aos-duration="1000">
-                    <img src="https://i.ibb.co/pjg7GrBY/img.png" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
+                    <img id="hero-profile-img" src="https://i.ibb.co/pjg7GrBY/img.png" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale group-hover:grayscale-0">
                     <div class="absolute bottom-0 left-0 w-full p-8 bg-gradient-to-t from-black via-black/80 to-transparent">
                         <h2 class="text-5xl font-heading text-white">SHANTANU J.</h2>
                         <p class="text-brand-red text-xs font-bold uppercase tracking-[0.3em]">Master Barber</p>
@@ -832,29 +891,25 @@
         </div>
     </section>
 
-    <!-- SERVICES SECTION (unchanged – icons already good) -->
+    <!-- SERVICES SECTION – REPLACED ICONS WITH PREMIUM IMAGES -->
     <section id="services" class="px-4 max-w-[1600px] mx-auto mb-20">
         <h2 class="text-center text-5xl font-heading mb-16 text-gradient-gold" data-aos="zoom-in">OUR <span class="text-gradient-red">SIGNATURE</span></h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div onclick="openServiceModal('haircut')" class="bento-card p-10 flex flex-col items-center text-center justify-center cursor-pointer transition-all group hover:!border-[#E1306C] hover:!shadow-[0_0_50px_rgba(225,48,108,0.3)] hover:bg-[#E1306C]/10" data-aos="fade-up" data-aos-delay="0">
-                <i class="fa-solid fa-scissors text-5xl text-gray-400 mb-6 group-hover:scale-110 transition-transform group-hover:text-[#E1306C] duration-300"></i>
-                <h3 class="text-2xl font-heading text-white">PRECISION CUT</h3>
-                <p class="text-xs text-gray-500 mt-2 uppercase tracking-widest font-bold group-hover:text-white/70">Fade • Textured</p>
+            <!-- Haircut image card -->
+            <div onclick="openServiceModal('haircut')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#E1306C] hover:!shadow-[0_0_50px_rgba(225,48,108,0.3)]" data-aos="fade-up" data-aos-delay="0">
+                <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop" alt="Precision haircut" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500">
             </div>
-            <div onclick="openServiceModal('beard')" class="bento-card p-10 flex flex-col items-center text-center justify-center cursor-pointer transition-all group hover:!border-[#FF0000] hover:!shadow-[0_0_50px_rgba(255,0,0,0.3)] hover:bg-[#FF0000]/10" data-aos="fade-up" data-aos-delay="100">
-                <i class="fa-solid fa-razor text-5xl text-gray-400 mb-6 group-hover:scale-110 transition-transform group-hover:text-[#FF0000] duration-300"></i>
-                <h3 class="text-2xl font-heading text-white">BEARD SCULPT</h3>
-                <p class="text-xs text-gray-500 mt-2 uppercase tracking-widest font-bold group-hover:text-white/70">Hot Towel • Shape</p>
+            <!-- Beard sculpt image card -->
+            <div onclick="openServiceModal('beard')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#FF0000] hover:!shadow-[0_0_50px_rgba(255,0,0,0.3)]" data-aos="fade-up" data-aos-delay="100">
+                <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=2070&auto=format&fit=crop" alt="Beard sculpting" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500">
             </div>
-            <div onclick="openServiceModal('color')" class="bento-card p-10 flex flex-col items-center text-center justify-center cursor-pointer transition-all group hover:!border-[#1877F2] hover:!shadow-[0_0_50px_rgba(24,119,242,0.3)] hover:bg-[#1877F2]/10" data-aos="fade-up" data-aos-delay="200">
-                <i class="fa-solid fa-paint-brush text-5xl text-gray-400 mb-6 group-hover:scale-110 transition-transform group-hover:text-[#1877F2] duration-300"></i>
-                <h3 class="text-2xl font-heading text-white">COLOR VENOM</h3>
-                <p class="text-xs text-gray-500 mt-2 uppercase tracking-widest font-bold group-hover:text-white/70">Highlights • Grey</p>
+            <!-- Hair color image card -->
+            <div onclick="openServiceModal('color')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#1877F2] hover:!shadow-[0_0_50px_rgba(24,119,242,0.3)]" data-aos="fade-up" data-aos-delay="200">
+                <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1974&auto=format&fit=crop" alt="Hair coloring" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500">
             </div>
-            <div onclick="openServiceModal('styling')" class="bento-card p-10 flex flex-col items-center text-center justify-center cursor-pointer transition-all group hover:!border-[#A855F7] hover:!shadow-[0_0_50px_rgba(168,85,247,0.3)] hover:bg-[#A855F7]/10" data-aos="fade-up" data-aos-delay="300">
-                <i class="fa-solid fa-spa text-5xl text-gray-400 mb-6 group-hover:scale-110 transition-transform group-hover:text-[#A855F7] duration-300"></i>
-                <h3 class="text-2xl font-heading text-white">ROYAL GROOM</h3>
-                <p class="text-xs text-gray-500 mt-2 uppercase tracking-widest font-bold group-hover:text-white/70">Facial • Hair Spa</p>
+            <!-- Royal groom image card -->
+            <div onclick="openServiceModal('styling')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#A855F7] hover:!shadow-[0_0_50px_rgba(168,85,247,0.3)]" data-aos="fade-up" data-aos-delay="300">
+                <img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?q=80&w=2070&auto=format&fit=crop" alt="Luxury grooming" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500">
             </div>
         </div>
     </section>
@@ -876,16 +931,15 @@
         <div id="pricing-onetime" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 px-4 pb-12"></div>
     </section>
 
-    <!-- SOCIAL MEDIA STRIP (unchanged) -->
+    <!-- SOCIAL MEDIA STRIP (dynamic) -->
     <div class="flex justify-center gap-6 mb-10" data-aos="fade-up">
-        <a href="https://instagram.com/imvilliambutcher" target="_blank" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 hover:text-white transition-all border border-white/10 hover:border-transparent social-icon"><i class="fa-brands fa-instagram"></i></a>
-        <a href="https://wa.me/917057193228" target="_blank" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-[#25D366] hover:text-white transition-all border border-white/10 hover:border-transparent social-icon"><i class="fa-brands fa-whatsapp"></i></a>
-        <a href="https://t.me/i_necxy" target="_blank" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-[#0088cc] hover:text-white transition-all border border-white/10 hover:border-transparent social-icon"><i class="fa-brands fa-telegram"></i></a>
-        <!-- Direct call icon added -->
-        <a href="tel:7057193228" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-brand-red hover:text-white transition-all border border-white/10 hover:border-transparent social-icon"><i class="fa-solid fa-phone"></i></a>
+        <a href="#" target="_blank" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 hover:text-white transition-all border border-white/10 hover:border-transparent social-icon social-link" id="social-instagram"><i class="fa-brands fa-instagram"></i></a>
+        <a href="#" target="_blank" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-[#25D366] hover:text-white transition-all border border-white/10 hover:border-transparent social-icon social-link" id="social-whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+        <a href="#" target="_blank" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-[#0088cc] hover:text-white transition-all border border-white/10 hover:border-transparent social-icon social-link" id="social-telegram"><i class="fa-brands fa-telegram"></i></a>
+        <a href="#" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-brand-red hover:text-white transition-all border border-white/10 hover:border-transparent social-icon social-link" id="social-phone"><i class="fa-solid fa-phone"></i></a>
     </div>
 
-    <!-- CONTACT FORM – with coupon toggle, waitlist toggle, etc. -->
+    <!-- CONTACT FORM – with staff selection (now at bottom), coupon, etc. -->
     <section id="contact" class="px-4 max-w-4xl mx-auto mb-20" data-aos="zoom-in-up" data-aos-duration="1000">
         <div class="bento-card p-10 md:p-20 relative overflow-hidden border border-white/10">
             <div class="absolute top-0 right-0 w-64 h-64 bg-brand-red/20 rounded-full blur-[100px]"></div>
@@ -911,7 +965,7 @@
                     <p id="email-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Please enter a valid email address</p>
                 </div>
 
-                <!-- Custom Searchable Service Dropdown (populated from DB) -->
+                <!-- Service Dropdown (from DB) -->
                 <div class="custom-select" id="custom-service-select">
                     <div class="select-selected" id="select-selected">
                         <span id="selected-text">SELECT SERVICE</span>
@@ -929,8 +983,27 @@
                 </div>
                 <p id="service-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Please select a service</p>
 
+                <!-- Staff dropdown (hidden until toggle) – moved to bottom -->
+                <div id="staff-section" class="hidden space-y-2">
+                    <div class="custom-select" id="custom-staff-select">
+                        <div class="select-selected" id="staff-selected">
+                            <span id="staff-selected-text">PREFERRED STAFF (OPTIONAL)</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="select-items" id="staff-items">
+                            <div class="select-search">
+                                <input type="text" id="staff-search" placeholder="Search staff..." autocomplete="off">
+                            </div>
+                            <div id="staff-options-container"></div>
+                        </div>
+                        <select id="c-staff" class="hidden-select" name="staff">
+                            <option value="" selected>Anyone (no preference)</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Custom Date Picker (unchanged) -->
+                    <!-- Custom Date Picker -->
                     <div class="custom-select" id="custom-date-select">
                         <div class="select-selected" id="date-selected">
                             <span id="date-selected-text">SELECT DATE</span>
@@ -954,7 +1027,7 @@
                     </div>
                     <p id="date-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Please select a date</p>
 
-                    <!-- Custom Time Dropdown (with dynamic positioning) -->
+                    <!-- Custom Time Dropdown -->
                     <div class="custom-select" id="custom-time-select">
                         <div class="select-selected" id="time-selected">
                             <span id="time-selected-text">SELECT TIME</span>
@@ -973,7 +1046,7 @@
                     <p id="time-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Please select a time</p>
                 </div>
 
-                <!-- Waitlist Toggle (replaced checkbox) -->
+                <!-- Waitlist Toggle -->
                 <div class="flex items-center gap-3">
                     <label class="switch">
                         <input type="checkbox" id="waitlist-checkbox">
@@ -982,14 +1055,36 @@
                     <span class="text-sm text-gray-300">If my slot is not available, add me to the waitlist</span>
                 </div>
 
-                <div>
-                    <textarea id="c-msg" rows="3" placeholder="ADDITIONAL NOTES (OPTIONAL)" class="w-full bg-black/40 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-brand-red transition-all font-bold tracking-wider text-sm placeholder-gray-600"></textarea>
-                </div>
-
-                <!-- COUPON CODE TOGGLE (hidden by default) -->
-                <div class="text-right">
+                <!-- NEW ROW: Two toggles side by side (staff left, coupon right) -->
+                <div class="flex justify-between items-center">
+                    <button type="button" id="toggle-staff" class="text-sm text-brand-red underline">I have a preferred staff</button>
                     <button type="button" id="toggle-coupon" class="text-sm text-brand-red underline">I have a coupon code</button>
                 </div>
+
+                <!-- Staff section (hidden initially) appears after toggles -->
+                <!-- Already defined above, but we keep it here for order; the actual div is above, but to maintain flow we leave it there; the staff-section is above the toggles? Actually we placed staff-section earlier, but we want it after toggles. Let's move the staff-section div here. We'll remove the earlier staff-section and place it after the toggles. -->
+                <!-- We need to restructure: staff-section should be after the toggles. So we will remove the staff-section from its old position and insert it here. But to avoid duplication, we'll delete the old staff-section and create a new one here. However, the old staff-section is above (line ~920). We'll delete that and put a new one here. But careful: the JavaScript references id="staff-section". So we'll keep the same ID. We'll move the entire staff-section div to this location. Let's do that: remove the staff-section from above and place it after the toggle row. We'll also remove the old toggle-staff button (which was above) and keep only the new row. -->
+
+                <!-- Actually, we already removed the old toggle-staff and toggle-coupon from above. Now we place staff-section here. -->
+                <div id="staff-section" class="hidden space-y-2">
+                    <div class="custom-select" id="custom-staff-select">
+                        <div class="select-selected" id="staff-selected">
+                            <span id="staff-selected-text">PREFERRED STAFF (OPTIONAL)</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div class="select-items" id="staff-items">
+                            <div class="select-search">
+                                <input type="text" id="staff-search" placeholder="Search staff..." autocomplete="off">
+                            </div>
+                            <div id="staff-options-container"></div>
+                        </div>
+                        <select id="c-staff" class="hidden-select" name="staff">
+                            <option value="" selected>Anyone (no preference)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Coupon section (hidden initially) -->
                 <div id="coupon-section" class="hidden space-y-2">
                     <div class="flex items-center gap-2">
                         <input type="text" id="coupon-code" placeholder="COUPON CODE" class="flex-1 bg-black/40 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-brand-red transition-all font-bold tracking-wider text-sm placeholder-gray-600">
@@ -999,8 +1094,12 @@
                     <div id="total-price" class="text-xl font-bold text-white text-right mt-2">Total: ₹<span id="total-amount">0</span></div>
                 </div>
 
-                <button type="submit" id="booking-submit-btn" class="w-full bg-white text-black font-heading text-2xl py-5 rounded-2xl hover:bg-brand-red hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] btn-shine flex items-center justify-center gap-3">
-                    <span>CHECK AVAILABILITY & BOOK</span>
+                <div>
+                    <textarea id="c-msg" rows="3" placeholder="ADDITIONAL NOTES (OPTIONAL)" class="w-full bg-black/40 border border-white/10 p-5 rounded-2xl text-white outline-none focus:border-brand-red transition-all font-bold tracking-wider text-sm placeholder-gray-600"></textarea>
+                </div>
+
+                <button type="button" id="booking-submit-btn" class="w-full bg-white text-black font-heading text-2xl py-5 rounded-2xl hover:bg-brand-red hover:text-white transition-all shadow-[0_0_30px_rgba(255,255,255,0.2)] btn-shine flex items-center justify-center gap-3">
+                    <span>CHECK & PROCEED</span>
                     <i class="fa-solid fa-spinner hidden animate-spin" id="btn-spinner"></i>
                 </button>
             </form>
@@ -1010,18 +1109,17 @@
     <footer class="text-center pt-20 pb-20 border-t border-white/5 bg-black relative" data-aos="fade-up">
         <div class="absolute inset-0 bg-gradient-to-t from-brand-red/5 to-transparent pointer-events-none"></div>
         <div class="max-w-4xl mx-auto px-4 relative z-10">
-            <h1 class="text-[15vw] font-heading text-white/5 leading-none select-none tracking-widest">NEX</h1>
+            <h1 class="text-[15vw] font-heading text-white/5 leading-none select-none tracking-widest">THE NEX</h1>
             <div class="-mt-6 md:-mt-16 relative z-10">
                 <p class="text-2xl md:text-3xl font-heading text-white mb-4 tracking-wide">THE ART OF <span class="text-gradient-red">GROOMING</span></p>
                 <p class="text-gray-500 text-xs md:text-sm max-w-lg mx-auto leading-relaxed tracking-wider font-light mb-4" id="footer-contact">
                     Shantanu Jagdale | 7057193228<br>Barshi Naka, Dharashiv, 413501
                 </p>
                 <div class="flex justify-center gap-4 text-xl">
-                    <a href="https://instagram.com/imvilliambutcher" target="_blank" class="text-gray-500 hover:text-brand-red transition-colors"><i class="fa-brands fa-instagram"></i></a>
-                    <a href="https://wa.me/917057193228" target="_blank" class="text-gray-500 hover:text-brand-red transition-colors"><i class="fa-brands fa-whatsapp"></i></a>
-                    <a href="https://t.me/i_necxy" target="_blank" class="text-gray-500 hover:text-brand-red transition-colors"><i class="fa-brands fa-telegram"></i></a>
-                    <!-- Direct call icon added -->
-                    <a href="tel:7057193228" class="text-gray-500 hover:text-brand-red transition-colors"><i class="fa-solid fa-phone"></i></a>
+                    <a href="#" target="_blank" class="text-gray-500 hover:text-brand-red transition-colors social-link" id="footer-instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" target="_blank" class="text-gray-500 hover:text-brand-red transition-colors social-link" id="footer-whatsapp"><i class="fa-brands fa-whatsapp"></i></a>
+                    <a href="#" target="_blank" class="text-gray-500 hover:text-brand-red transition-colors social-link" id="footer-telegram"><i class="fa-brands fa-telegram"></i></a>
+                    <a href="#" class="text-gray-500 hover:text-brand-red transition-colors social-link" id="footer-phone"><i class="fa-solid fa-phone"></i></a>
                 </div>
                 <div class="flex justify-center gap-6 mt-4 text-xs text-gray-600">
                     <button onclick="openPrivacyModal()" class="hover:text-brand-red transition-colors">Privacy Policy</button>
@@ -1054,7 +1152,8 @@
         const servicesRef = db.ref('services');
         const staffRef = db.ref('staff');
         const settingsRef = db.ref('settings');
-        const offersRef = db.ref('offers');
+        const offersRef = db.ref('offers'); // legacy, not used now
+        const couponsRef = db.ref('coupons'); // multiple coupons
         const rulesRef = db.ref('rules');
         const emailSettingsRef = db.ref('emailSettings');
         const bookingsRef = db.ref('bookings');
@@ -1063,21 +1162,24 @@
 
         // Global data stores
         let services = {};
+        let staffList = {};
         let settings = {};
-        let rules = {
-            minHours: 2,
-            maxPerDay: 50,
-            buffer: 60,
-            allowWeekend: true
-        };
+        let rules = { minHours: 2, maxPerDay: 50, buffer: 60, allowWeekend: true };
         let emailSettings = {};
-        let currentOffer = { title: '', couponCode: '', percent: 0, maxUses: 0, expiryDate: '', active: false, usedCount: 0 };
+        let coupons = {}; // multiple coupons
+        let bookings = {}; // needed for coupon usage
 
         // For coupon/discount
         let currentServicePrice = 0;
+        let currentServiceTitle = '';
+        let currentServiceKey = '';
+        let currentStaffId = '';
+        let currentStaffName = 'Anyone';
         let currentDiscountPercent = 0;
         let appliedCouponCode = '';
-        let appliedOfferTitle = '';
+        let appliedCouponTitle = '';
+        let selectedPaymentMethod = null; // 'online' or 'after'
+        let pendingBookingData = null; // store data before payment
 
         // ---------- Fetch data and build UI ----------
         function loadData() {
@@ -1087,9 +1189,16 @@
                 buildServiceDropdown();
             });
 
+            staffRef.on('value', (snapshot) => {
+                staffList = snapshot.val() || {};
+                buildStaffDropdown();
+            });
+
             settingsRef.on('value', (snapshot) => {
                 settings = snapshot.val() || {};
                 updateContactInfo();
+                updateSocialLinks();
+                updateImages();
             });
 
             rulesRef.on('value', (snapshot) => {
@@ -1100,36 +1209,82 @@
                 emailSettings = snapshot.val() || {};
             });
 
-            // Listen to global offer (for validation only, not display)
-            offersRef.on('value', (snapshot) => {
-                currentOffer = snapshot.val() || { title: '', couponCode: '', percent: 0, maxUses: 0, expiryDate: '', active: false, usedCount: 0 };
+            couponsRef.on('value', (snapshot) => {
+                coupons = snapshot.val() || {};
+            });
+
+            bookingsRef.on('value', (snapshot) => {
+                bookings = snapshot.val() || {};
             });
         }
 
-        function updateContactInfo() {
-            if (settings.hours) {
-                document.getElementById('hero-hours').innerText = settings.hours;
-                const hoursList = document.getElementById('hours-list');
-                if (hoursList) {
-                    const lines = settings.hours.split('\n').filter(l => l.trim());
-                    let html = '';
-                    lines.forEach(line => {
-                        const parts = line.split(':');
-                        if (parts.length >= 2) {
-                            html += `<li class="flex justify-between"><span>${parts[0]}</span> <span class="font-bold text-white">${parts.slice(1).join(':')}</span></li>`;
-                        } else {
-                            html += `<li class="flex justify-between"><span>${line}</span></li>`;
-                        }
-                    });
-                    hoursList.innerHTML = html;
-                }
+        function updateImages() {
+            if (settings.logo) document.getElementById('navbar-logo').src = settings.logo;
+            if (settings.profile) {
+                document.getElementById('profile-nav-img').src = settings.profile;
+                document.getElementById('mobile-profile-img').src = settings.profile;
+                document.getElementById('profile-img').src = settings.profile;
+                document.getElementById('hero-profile-img').src = settings.profile;
             }
-            const footerContact = document.getElementById('footer-contact');
-            if (footerContact) {
-                footerContact.innerHTML = `Shantanu Jagdale | ${settings.phone || '7057193228'}<br>${settings.address || 'Barshi Naka, Dharashiv, 413501'}`;
+            if (settings.hero) document.getElementById('hero-background').src = settings.hero;
+        }
+
+        function updateSocialLinks() {
+            const insta = settings.instagram || '#';
+            const wa = settings.whatsapp || '#';
+            const tg = settings.telegram || '#';
+            const phone = settings.phone ? `tel:${settings.phone}` : '#';
+            const phoneNum = settings.phone || '7057193228';
+            const address = settings.address || 'Barshi Naka, Dharashiv 413501';
+            const hours = settings.hours || 'Tue-Sat: 9AM-9PM\nSun: 9AM-10PM\nMon: Closed';
+
+            // Update all social links
+            document.querySelectorAll('.social-link').forEach(el => {
+                if (el.id.includes('instagram')) el.href = insta;
+                if (el.id.includes('whatsapp')) el.href = wa;
+                if (el.id.includes('telegram')) el.href = tg;
+                if (el.id.includes('phone')) el.href = phone;
+            });
+
+            // Profile contact links
+            document.getElementById('profile-phone').innerText = phoneNum;
+            document.getElementById('profile-address').innerText = address;
+            if (settings.instagram) {
+                const igHandle = settings.instagram.split('/').filter(p => p).pop() || '@vox.salon';
+                document.getElementById('profile-ig-handle').innerText = igHandle;
+                document.getElementById('profile-ig').href = settings.instagram;
+            }
+            if (settings.whatsapp) document.getElementById('profile-wa').href = settings.whatsapp;
+
+            // Footer contact
+            document.getElementById('footer-contact').innerHTML = `Shantanu Jagdale | ${phoneNum}<br>${address}`;
+            document.getElementById('ticket-footer').innerText = `${address} | ${phoneNum}`;
+
+            // Hero hours
+            document.getElementById('hero-hours').innerText = hours.replace(/\n/g, ' | ');
+
+            // Hours list in profile
+            const hoursList = document.getElementById('hours-list');
+            if (hoursList) {
+                const lines = hours.split('\n').filter(l => l.trim());
+                let html = '';
+                lines.forEach(line => {
+                    const parts = line.split(':');
+                    if (parts.length >= 2) {
+                        html += `<li class="flex justify-between"><span>${parts[0]}</span> <span class="font-bold text-white">${parts.slice(1).join(':')}</span></li>`;
+                    } else {
+                        html += `<li class="flex justify-between"><span>${line}</span></li>`;
+                    }
+                });
+                hoursList.innerHTML = html;
             }
         }
 
+        function updateContactInfo() {
+            // already handled in updateSocialLinks
+        }
+
+        // --- COMPACT PRICING CARDS ---
         function buildPricingCards() {
             const monthlyContainer = document.getElementById('pricing-monthly');
             const onetimeContainer = document.getElementById('pricing-onetime');
@@ -1142,22 +1297,23 @@
                 const price = s.price || 0;
                 const type = s.type || 'Haircut';
                 const features = s.features || ['Premium service'];
-                const featureItems = features.slice(0, 3).map(f => `<li class="flex items-center gap-2"><i class="fa-regular fa-circle-check text-brand-red text-xs"></i> ${f}</li>`).join('');
+                const featureItems = features.slice(0, 3).map(f => `<li class="flex items-center gap-1"><i class="fa-regular fa-circle-check text-brand-red text-[8px]"></i> <span class="text-[9px]">${f}</span></li>`).join('');
 
+                // More compact card: reduced padding, smaller fonts, tighter spacing
                 const cardHtml = `
-                    <div onclick="openPlanModal('${key}')" class="bento-card p-5 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up">
+                    <div onclick="openPlanModal('${key}')" class="bento-card p-3 cursor-pointer flex flex-col justify-between hover:scale-[1.02] transition-all border border-white/10 group pricing-card" data-aos="fade-up">
                         <div>
-                            <div class="flex items-center gap-2 mb-2">
-                                <i class="fa-solid fa-cut text-brand-red text-xl"></i>
-                                <h3 class="text-xl font-heading text-gray-500 group-hover:text-white transition-colors">${title}</h3>
+                            <div class="flex items-center gap-1 mb-1">
+                                <i class="fa-solid fa-cut text-brand-red text-base"></i>
+                                <h3 class="text-base font-heading text-gray-500 group-hover:text-white transition-colors truncate">${title}</h3>
                             </div>
-                            <h2 class="text-3xl font-heading mt-2 text-white">₹${price}</h2>
-                            <div class="h-px bg-white/10 w-full my-3"></div>
-                            <ul class="space-y-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                            <h2 class="text-2xl font-heading mt-1 text-white">₹${price}</h2>
+                            <div class="h-px bg-white/10 w-full my-2"></div>
+                            <ul class="space-y-1 text-[10px] text-gray-400 font-bold uppercase tracking-wider">
                                 ${featureItems}
                             </ul>
                         </div>
-                        <div class="mt-3 text-center text-[8px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div>
+                        <div class="mt-2 text-center text-[7px] text-brand-red font-bold uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-opacity">Tap for Details</div>
                     </div>
                 `;
 
@@ -1232,10 +1388,12 @@
                     hiddenSelect.value = key;
                     selectedTextSpan.innerText = `${service.title} - ₹${service.price}`;
                     currentServicePrice = service.price;
+                    currentServiceTitle = service.title;
+                    currentServiceKey = key;
                     // Reset coupon when service changes
                     currentDiscountPercent = 0;
                     appliedCouponCode = '';
-                    appliedOfferTitle = '';
+                    appliedCouponTitle = '';
                     document.getElementById('coupon-code').value = '';
                     document.getElementById('discount-info').classList.add('hidden');
                     updateTotalDisplay();
@@ -1270,9 +1428,121 @@
             });
         }
 
-        // Coupon apply logic – only shows "New Shop Discount applied" on success
+        function buildStaffDropdown() {
+            const hiddenSelect = document.getElementById('c-staff');
+            const optionsContainer = document.getElementById('staff-options-container');
+            const searchInput = document.getElementById('staff-search');
+            const selectedTextSpan = document.getElementById('staff-selected-text');
+
+            hiddenSelect.innerHTML = '<option value="" selected>Anyone (no preference)</option>';
+            
+            const staffArray = Object.entries(staffList).map(([key, s]) => ({
+                key: key,
+                name: s.name || 'Staff',
+                role: s.role || ''
+            })).sort((a, b) => a.name.localeCompare(b.name));
+
+            staffArray.forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.key;
+                option.textContent = `${s.name} (${s.role || 'Stylist'})`;
+                hiddenSelect.appendChild(option);
+            });
+
+            function renderStaffOptions(filter = '') {
+                optionsContainer.innerHTML = '';
+                // Add "Anyone" option first
+                const anyoneDiv = document.createElement('div');
+                anyoneDiv.className = 'select-option';
+                if (hiddenSelect.value === '') {
+                    anyoneDiv.classList.add('selected');
+                }
+                anyoneDiv.innerHTML = `<i class="fa-solid fa-user"></i><span class="option-text">Anyone (no preference)</span>`;
+                anyoneDiv.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selectStaff('');
+                    document.getElementById('staff-items').classList.remove('show');
+                    document.getElementById('staff-selected').classList.remove('open');
+                });
+                optionsContainer.appendChild(anyoneDiv);
+
+                const filtered = staffArray.filter(s => s.name.toLowerCase().includes(filter.toLowerCase()) || s.role.toLowerCase().includes(filter.toLowerCase()));
+                filtered.forEach(s => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'select-option';
+                    if (hiddenSelect.value === s.key) {
+                        optionDiv.classList.add('selected');
+                    }
+                    optionDiv.innerHTML = `<i class="fa-solid fa-user-tie"></i><span class="option-text">${s.name} <span class="text-gray-500 text-[8px]">${s.role}</span></span>`;
+                    optionDiv.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selectStaff(s.key);
+                        document.getElementById('staff-items').classList.remove('show');
+                        document.getElementById('staff-selected').classList.remove('open');
+                    });
+                    optionsContainer.appendChild(optionDiv);
+                });
+            }
+
+            window.selectStaff = (key) => {
+                if (key === '') {
+                    hiddenSelect.value = '';
+                    selectedTextSpan.innerText = 'Anyone (no preference)';
+                    currentStaffId = '';
+                    currentStaffName = 'Anyone';
+                } else {
+                    const staff = staffArray.find(s => s.key === key);
+                    if (staff) {
+                        hiddenSelect.value = key;
+                        selectedTextSpan.innerText = `${staff.name} (${staff.role || 'Stylist'})`;
+                        currentStaffId = key;
+                        currentStaffName = staff.name;
+                    }
+                }
+                renderStaffOptions(searchInput.value);
+            };
+
+            renderStaffOptions();
+
+            document.getElementById('staff-selected').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const items = document.getElementById('staff-items');
+                items.classList.toggle('show');
+                document.getElementById('staff-selected').classList.toggle('open');
+                if (items.classList.contains('show')) {
+                    searchInput.focus();
+                }
+            });
+
+            searchInput.addEventListener('input', (e) => {
+                renderStaffOptions(e.target.value);
+            });
+
+            document.addEventListener('click', (e) => {
+                const selected = document.getElementById('staff-selected');
+                const items = document.getElementById('staff-items');
+                if (!selected.contains(e.target) && !items.contains(e.target)) {
+                    items.classList.remove('show');
+                    selected.classList.remove('open');
+                }
+            });
+        }
+
+        // Toggle staff section – now handled by bottom button with id toggle-staff
+        document.getElementById('toggle-staff').addEventListener('click', function() {
+            const staffSection = document.getElementById('staff-section');
+            staffSection.classList.toggle('hidden');
+        });
+
+        // Coupon toggle
+        document.getElementById('toggle-coupon').addEventListener('click', function() {
+            const couponSection = document.getElementById('coupon-section');
+            couponSection.classList.toggle('hidden');
+        });
+
+        // Coupon apply logic – checks all active coupons and displays title
         document.getElementById('apply-coupon').addEventListener('click', async () => {
-            const code = document.getElementById('coupon-code').value.trim();
+            const code = document.getElementById('coupon-code').value.trim().toUpperCase();
             const discountInfo = document.getElementById('discount-info');
             if (!code) {
                 discountInfo.classList.remove('hidden', 'text-green-500');
@@ -1287,47 +1557,38 @@
                 return;
             }
 
-            // Validate against currentOffer
-            if (!currentOffer.active) {
-                discountInfo.classList.remove('hidden', 'text-green-500');
-                discountInfo.classList.add('text-red-500');
-                discountInfo.innerText = 'Invalid coupon';
-                return;
-            }
-
-            if (code.toLowerCase() !== (currentOffer.couponCode || '').toLowerCase()) {
-                discountInfo.classList.remove('hidden', 'text-green-500');
-                discountInfo.classList.add('text-red-500');
-                discountInfo.innerText = 'Invalid coupon';
-                return;
-            }
-
-            // Check expiry
-            if (currentOffer.expiryDate) {
-                const today = new Date().toISOString().split('T')[0];
-                if (today > currentOffer.expiryDate) {
-                    discountInfo.classList.remove('hidden', 'text-green-500');
-                    discountInfo.classList.add('text-red-500');
-                    discountInfo.innerText = 'Invalid coupon';
-                    return;
+            // Find matching coupon from coupons object
+            let matchedCoupon = null;
+            for (let key in coupons) {
+                const c = coupons[key];
+                if (c.active && c.code && c.code.toUpperCase() === code) {
+                    // Check expiry
+                    if (c.expiryDate) {
+                        const today = new Date().toISOString().split('T')[0];
+                        if (today > c.expiryDate) continue;
+                    }
+                    // Check max uses
+                    const used = Object.values(bookings).filter(b => b.couponCode === c.code).length;
+                    if (c.maxUses > 0 && used >= c.maxUses) continue;
+                    matchedCoupon = c;
+                    break;
                 }
             }
 
-            // Check max uses
-            if (currentOffer.maxUses > 0 && (currentOffer.usedCount || 0) >= currentOffer.maxUses) {
+            if (!matchedCoupon) {
                 discountInfo.classList.remove('hidden', 'text-green-500');
                 discountInfo.classList.add('text-red-500');
                 discountInfo.innerText = 'Invalid coupon';
                 return;
             }
 
-            // Valid coupon
-            currentDiscountPercent = currentOffer.percent || 0;
-            appliedCouponCode = code;
-            appliedOfferTitle = currentOffer.title;
+            // Valid coupon – display title and percent in green
+            currentDiscountPercent = matchedCoupon.percent || 0;
+            appliedCouponCode = matchedCoupon.code;
+            appliedCouponTitle = matchedCoupon.title;
             discountInfo.classList.remove('hidden', 'text-red-500');
             discountInfo.classList.add('text-green-500');
-            discountInfo.innerText = 'New Shop Discount applied';
+            discountInfo.innerText = `${matchedCoupon.title} – ${matchedCoupon.percent}% off applied`;
             updateTotalDisplay();
         });
 
@@ -1335,12 +1596,6 @@
             const finalPrice = currentServicePrice * (1 - currentDiscountPercent / 100);
             document.getElementById('total-amount').innerText = Math.round(finalPrice);
         }
-
-        // Toggle coupon section visibility
-        document.getElementById('toggle-coupon').addEventListener('click', function() {
-            const couponSection = document.getElementById('coupon-section');
-            couponSection.classList.toggle('hidden');
-        });
 
         // Plan modal opener (unchanged)
         window.openPlanModal = (serviceKey) => {
@@ -1369,7 +1624,7 @@
                 setTimeout(() => {
                     if (window.selectService) selectService(serviceKey);
                     document.getElementById('service-search').value = '';
-                    renderOptions('');
+                    buildServiceDropdown(); // re-render options
                     const msgBox = document.getElementById('c-msg');
                     msgBox.value = `I want to book the ${s.title} (₹${s.price}). Please confirm availability.`;
                     msgBox.focus();
@@ -1384,7 +1639,7 @@
             }, 10);
         };
 
-        // ---------- Availability & Time functions (unchanged, plus dropdown positioning) ----------
+        // ---------- Availability & Time functions (unchanged) ----------
         const timeList = [];
         for (let h = 9; h <= 21; h++) {
             for (let m = 0; m < 60; m += 30) {
@@ -1614,10 +1869,9 @@
 
         timeSelected.addEventListener('click', (e) => {
             e.stopPropagation();
-            // Dynamic positioning: open upward if not enough space below
             const rect = timeSelected.getBoundingClientRect();
             const spaceBelow = window.innerHeight - rect.bottom;
-            const dropdownHeight = 400; // max-height from CSS
+            const dropdownHeight = 400;
             if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
                 timeItems.style.top = 'auto';
                 timeItems.style.bottom = '100%';
@@ -1719,6 +1973,8 @@
                     service: data.service,
                     serviceTitle: data.serviceTitle,
                     servicePrice: data.servicePrice,
+                    staff: data.staff,
+                    staffName: data.staffName,
                     date: data.date,
                     time: data.time,
                     message: data.message,
@@ -1753,12 +2009,13 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
         }
 
-        function showTicketModal(bookingData, bookingId) {
+        function showTicketModal(bookingData, bookingId, paymentMethod) {
             document.getElementById('ticket-id').innerText = `#${bookingId.slice(-8)}`;
             document.getElementById('ticket-name').innerText = bookingData.name;
             document.getElementById('ticket-phone').innerText = bookingData.phone;
             document.getElementById('ticket-email').innerText = bookingData.email;
             document.getElementById('ticket-service').innerText = bookingData.serviceTitle;
+            document.getElementById('ticket-staff').innerText = bookingData.staffName || 'Anyone';
             document.getElementById('ticket-price').innerText = `₹${bookingData.finalPrice}`;
             document.getElementById('ticket-date').innerText = bookingData.date;
             const time24 = bookingData.time;
@@ -1767,6 +2024,7 @@
             const hour12 = h % 12 || 12;
             document.getElementById('ticket-time').innerText = `${hour12}:${m} ${period}`;
             document.getElementById('ticket-msg').innerText = bookingData.message || '-';
+            document.getElementById('ticket-payment').innerText = paymentMethod === 'online' ? 'Online (Razorpay)' : 'After Service';
 
             const modal = document.getElementById('ticket-modal');
             const card = document.getElementById('ticket-modal-card');
@@ -1793,14 +2051,212 @@
             return 'NEX' + Math.floor(10000 + Math.random() * 90000);
         }
 
-        // Form submit handler (updated to include discount and increment offer usage)
-        document.getElementById('contact-form').addEventListener('submit', async (e) => {
+        // Payment modal functions
+        window.selectPaymentMethod = function(method) {
+            selectedPaymentMethod = method;
+            document.getElementById('pay-online-option').classList.toggle('selected', method === 'online');
+            document.getElementById('pay-after-option').classList.toggle('selected', method === 'after');
+            document.getElementById('confirm-payment-btn').innerText = method === 'online' ? 'Pay Online' : 'Confirm Booking';
+        };
+
+        function closePaymentModal() {
+            const modal = document.getElementById('payment-modal');
+            const card = document.getElementById('payment-modal-card');
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-90');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            selectedPaymentMethod = null;
+        }
+
+        function openPaymentModal(bookingData) {
+            pendingBookingData = bookingData;
+            document.getElementById('payment-service-name').innerText = bookingData.serviceTitle;
+            document.getElementById('payment-staff').innerText = bookingData.staffName || 'Anyone';
+            document.getElementById('payment-datetime').innerText = `${bookingData.date} ${bookingData.time}`;
+            document.getElementById('payment-coupon').innerText = bookingData.couponCode ? `${bookingData.couponTitle} (${bookingData.discountPercent}% off)` : 'None';
+            document.getElementById('payment-total').innerText = `₹${bookingData.finalPrice}`;
+            selectedPaymentMethod = null;
+            document.getElementById('pay-online-option').classList.remove('selected');
+            document.getElementById('pay-after-option').classList.remove('selected');
+            document.getElementById('confirm-payment-btn').innerText = 'Confirm & Pay';
+
+            const modal = document.getElementById('payment-modal');
+            const card = document.getElementById('payment-modal-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => { 
+                modal.classList.remove('opacity-0'); 
+                card.classList.remove('scale-90'); 
+                card.classList.add('scale-100'); 
+            }, 10);
+        }
+
+        // Process payment after method selection
+        window.processPayment = async function() {
+            if (!selectedPaymentMethod) {
+                showToast('Please select a payment method', 'error');
+                return;
+            }
+            if (!pendingBookingData) return;
+
+            const bookingData = pendingBookingData;
+
+            if (selectedPaymentMethod === 'after') {
+                // Create booking immediately
+                await createBooking(bookingData, 'after');
+                closePaymentModal();
+            } else if (selectedPaymentMethod === 'online') {
+                // Razorpay integration
+                const options = {
+                    key: "rzp_live_your_key", // Replace with your Razorpay live key
+                    amount: bookingData.finalPrice * 100,
+                    currency: "INR",
+                    name: "NEX Salon",
+                    description: `Booking: ${bookingData.serviceTitle}`,
+                    image: settings.logo || "https://i.ibb.co/1pHWzNN/img.png",
+                    handler: async function(response) {
+                        // Payment successful
+                        await createBooking(bookingData, 'online', response.razorpay_payment_id);
+                        closePaymentModal();
+                    },
+                    prefill: {
+                        name: bookingData.name,
+                        email: bookingData.email,
+                        contact: bookingData.phone
+                    },
+                    theme: { color: "#FF002E" }
+                };
+                const rzp = new Razorpay(options);
+                rzp.open();
+            }
+        };
+
+        async function createBooking(bookingData, paymentMethod, paymentId = '') {
+            try {
+                // Increment coupon usage if applied
+                if (bookingData.couponCode) {
+                    const couponRef = db.ref('coupons').orderByChild('code').equalTo(bookingData.couponCode).limitToFirst(1);
+                    const snapshot = await couponRef.once('value');
+                    if (snapshot.exists()) {
+                        const key = Object.keys(snapshot.val())[0];
+                        await db.ref(`coupons/${key}`).transaction((current) => {
+                            if (current) {
+                                current.usedCount = (current.usedCount || 0) + 1;
+                            }
+                            return current;
+                        });
+                    }
+                }
+
+                // Push to bookings
+                const newBookingRef = bookingsRef.push();
+                await newBookingRef.set({
+                    clientName: bookingData.name,
+                    phone: bookingData.phone,
+                    email: bookingData.email,
+                    service: bookingData.serviceKey,
+                    serviceTitle: bookingData.serviceTitle,
+                    staff: bookingData.staffId || '',
+                    staffName: bookingData.staffName || 'Anyone',
+                    originalPrice: bookingData.originalPrice,
+                    discountPercent: bookingData.discountPercent,
+                    discountAmount: bookingData.originalPrice - bookingData.finalPrice,
+                    finalPrice: bookingData.finalPrice,
+                    couponCode: bookingData.couponCode || '',
+                    couponTitle: bookingData.couponTitle || '',
+                    date: bookingData.date,
+                    time: bookingData.time,
+                    notes: bookingData.message,
+                    bookingId: bookingData.bookingId,
+                    status: 'Pending',
+                    paymentMethod: paymentMethod,
+                    paymentId: paymentId || '',
+                    createdAt: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                // Update client record
+                const clientSnapshot = await clientsRef.orderByChild('phone').equalTo(bookingData.phone).once('value');
+                let clientKey = null;
+                if (clientSnapshot.exists()) {
+                    clientKey = Object.keys(clientSnapshot.val())[0];
+                }
+                const clientData = {
+                    name: bookingData.name,
+                    phone: bookingData.phone,
+                    email: bookingData.email,
+                    lastVisit: bookingData.date,
+                    totalSpent: (clientSnapshot.val()?.[clientKey]?.totalSpent || 0) + bookingData.finalPrice,
+                    updatedAt: firebase.database.ServerValue.TIMESTAMP
+                };
+                if (clientKey) {
+                    await clientsRef.child(clientKey).update(clientData);
+                    await clientsRef.child(clientKey).child('appointments').child(newBookingRef.key).set(true);
+                } else {
+                    const newClientRef = await clientsRef.push({
+                        ...clientData,
+                        createdAt: firebase.database.ServerValue.TIMESTAMP
+                    });
+                    await newClientRef.child('appointments').child(newBookingRef.key).set(true);
+                }
+
+                // Send email via EmailJS
+                const serviceID = "service_54hp8dd";
+                const templateID = "template_ou3pk5a"; 
+                const templateParams = {
+                    user_email: bookingData.email,
+                    customer_name: bookingData.name,
+                    booking_id: bookingData.bookingId,
+                    booking_date: bookingData.date,
+                    booking_time: bookingData.time,
+                    services_booked: bookingData.serviceTitle,
+                    total_price: bookingData.finalPrice,
+                    message: bookingData.message || "No special request"
+                };
+                await emailjs.send(serviceID, templateID, templateParams);
+
+                // Reset form
+                document.getElementById('contact-form').reset();
+                document.getElementById('c-service').value = '';
+                document.getElementById('selected-text').innerText = 'SELECT SERVICE';
+                document.getElementById('c-staff').value = '';
+                document.getElementById('staff-selected-text').innerText = 'PREFERRED STAFF (OPTIONAL)';
+                document.getElementById('c-date').value = '';
+                document.getElementById('date-selected-text').innerText = 'SELECT DATE';
+                document.getElementById('c-time').value = '';
+                document.getElementById('time-selected-text').innerText = 'SELECT TIME';
+                document.getElementById('coupon-code').value = '';
+                document.getElementById('discount-info').classList.add('hidden');
+                currentServicePrice = 0;
+                currentDiscountPercent = 0;
+                appliedCouponCode = '';
+                appliedCouponTitle = '';
+                updateTotalDisplay();
+                const today = new Date();
+                currentMonth = today.getMonth();
+                currentYear = today.getFullYear();
+                renderCalendar(currentMonth, currentYear);
+                renderTimeOptions([]);
+                document.getElementById('waitlist-checkbox').checked = false;
+
+                // Show ticket
+                showTicketModal(bookingData, newBookingRef.key, paymentMethod);
+                showToast('Booking confirmed! Ticket sent to email.', 'success');
+
+            } catch (error) {
+                console.error("Error creating booking:", error);
+                showToast('Booking failed, please try again', 'error');
+            }
+        }
+
+        // Form submit handler – first validate and check availability, then open payment modal
+        document.getElementById('booking-submit-btn').addEventListener('click', async (e) => {
             e.preventDefault();
             
             const nameEl = document.getElementById('c-name');
             const phoneEl = document.getElementById('c-phone');
             const emailEl = document.getElementById('c-email');
             const serviceEl = document.getElementById('c-service');
+            const staffEl = document.getElementById('c-staff');
             const dateEl = document.getElementById('c-date');
             const timeEl = document.getElementById('c-time');
             const msgEl = document.getElementById('c-msg');
@@ -1821,6 +2277,7 @@
             const phoneVal = phoneEl.value.trim();
             const emailVal = emailEl.value.trim();
             const serviceVal = serviceEl.value;
+            const staffVal = staffEl.value;
             const dateVal = dateEl.value;
             const timeVal = timeEl.value;
             const msgVal = msgEl.value.trim();
@@ -1868,6 +2325,7 @@
             if (!available) {
                 if (waitlist) {
                     const selectedService = services[serviceVal] || { title: serviceVal, price: 0 };
+                    const staffName = staffVal ? (staffList[staffVal]?.name || 'Anyone') : 'Anyone';
                     const waitlistData = {
                         name: nameVal,
                         phone: phoneVal,
@@ -1875,6 +2333,8 @@
                         service: serviceVal,
                         serviceTitle: selectedService.title,
                         servicePrice: selectedService.price || 0,
+                        staff: staffVal || '',
+                        staffName: staffName,
                         date: dateVal,
                         time: timeVal,
                         message: msgVal
@@ -1899,131 +2359,39 @@
                 return;
             }
 
-            // Slot available, proceed with booking
+            // Slot available, prepare booking data and open payment modal
             const selectedService = services[serviceVal] || { title: serviceVal, price: 0 };
             const serviceTitle = selectedService.title;
             const originalPrice = selectedService.price || 0;
             const discountPercent = currentDiscountPercent;
             const finalPrice = originalPrice * (1 - discountPercent / 100);
             const bookingId = generateBookingId();
+            const staffName = staffVal ? (staffList[staffVal]?.name || 'Anyone') : 'Anyone';
 
-            try {
-                // Increment offer usage if coupon applied (atomic transaction)
-                if (appliedCouponCode) {
-                    const offerRef = offersRef;
-                    await offerRef.transaction((current) => {
-                        if (current) {
-                            current.usedCount = (current.usedCount || 0) + 1;
-                        }
-                        return current;
-                    });
-                }
+            const bookingData = {
+                name: nameVal,
+                phone: phoneVal,
+                email: emailVal,
+                serviceKey: serviceVal,
+                serviceTitle: serviceTitle,
+                originalPrice: originalPrice,
+                discountPercent: discountPercent,
+                finalPrice: Math.round(finalPrice),
+                couponCode: appliedCouponCode,
+                couponTitle: appliedCouponTitle,
+                staffId: staffVal || '',
+                staffName: staffName,
+                date: dateVal,
+                time: timeVal,
+                message: msgVal,
+                bookingId: bookingId
+            };
 
-                // Push to bookings with discount details
-                const newBookingRef = bookingsRef.push();
-                await newBookingRef.set({
-                    clientName: nameVal,
-                    phone: phoneVal,
-                    email: emailVal,
-                    service: serviceVal,
-                    serviceTitle: serviceTitle,
-                    originalPrice: originalPrice,
-                    discountPercent: discountPercent,
-                    discountAmount: originalPrice - finalPrice,
-                    finalPrice: Math.round(finalPrice),
-                    couponCode: appliedCouponCode || '',
-                    offerTitle: appliedOfferTitle || '',
-                    date: dateVal,
-                    time: timeVal,
-                    notes: msgVal,
-                    bookingId: bookingId,
-                    status: 'Pending',
-                    createdAt: firebase.database.ServerValue.TIMESTAMP
-                });
+            submitBtn.querySelector('span').classList.remove('hidden');
+            spinner.classList.add('hidden');
+            submitBtn.disabled = false;
 
-                // Update client record
-                const clientSnapshot = await clientsRef.orderByChild('phone').equalTo(phoneVal).once('value');
-                let clientKey = null;
-                if (clientSnapshot.exists()) {
-                    clientKey = Object.keys(clientSnapshot.val())[0];
-                }
-                const clientData = {
-                    name: nameVal,
-                    phone: phoneVal,
-                    email: emailVal,
-                    lastVisit: dateVal,
-                    totalSpent: (clientSnapshot.val()?.[clientKey]?.totalSpent || 0) + finalPrice,
-                    updatedAt: firebase.database.ServerValue.TIMESTAMP
-                };
-                if (clientKey) {
-                    await clientsRef.child(clientKey).update(clientData);
-                } else {
-                    await clientsRef.push({
-                        ...clientData,
-                        createdAt: firebase.database.ServerValue.TIMESTAMP
-                    });
-                }
-
-                // Send email via EmailJS (fixed template parameters)
-                const serviceID = "service_54hp8dd";
-                const templateID = "template_ou3pk5a"; 
-                const templateParams = {
-                    user_email: emailVal,
-                    customer_name: nameVal,
-                    booking_id: bookingId,
-                    booking_date: dateVal,
-                    booking_time: timeVal,
-                    services_booked: serviceTitle,
-                    total_price: Math.round(finalPrice),
-                    message: msgVal || "No special request"
-                };
-                await emailjs.send(serviceID, templateID, templateParams);
-
-                // Reset form
-                document.getElementById('contact-form').reset();
-                document.getElementById('c-service').value = '';
-                document.getElementById('selected-text').innerText = 'SELECT SERVICE';
-                document.getElementById('c-date').value = '';
-                document.getElementById('date-selected-text').innerText = 'SELECT DATE';
-                document.getElementById('c-time').value = '';
-                document.getElementById('time-selected-text').innerText = 'SELECT TIME';
-                document.getElementById('coupon-code').value = '';
-                document.getElementById('discount-info').classList.add('hidden');
-                currentServicePrice = 0;
-                currentDiscountPercent = 0;
-                appliedCouponCode = '';
-                appliedOfferTitle = '';
-                updateTotalDisplay();
-                const today = new Date();
-                currentMonth = today.getMonth();
-                currentYear = today.getFullYear();
-                renderCalendar(currentMonth, currentYear);
-                renderTimeOptions([]);
-                waitlistCheckbox.checked = false;
-
-                const bookingData = { 
-                    name: nameVal, 
-                    phone: phoneVal, 
-                    email: emailVal, 
-                    serviceTitle: serviceTitle,
-                    finalPrice: Math.round(finalPrice),
-                    date: dateVal, 
-                    time: timeVal, 
-                    message: msgVal 
-                };
-                showTicketModal(bookingData, newBookingRef.key);
-                showToast('Booking confirmed! Ticket sent to email.', 'success');
-
-            } catch (error) {
-                console.error("Error adding booking: ", error);
-                availabilityMsg.classList.remove('hidden');
-                availabilityMsg.innerHTML = 'Booking failed. Please try again.';
-                showToast('Booking failed, try again', 'error');
-            } finally {
-                submitBtn.querySelector('span').classList.remove('hidden');
-                spinner.classList.add('hidden');
-                submitBtn.disabled = false;
-            }
+            openPaymentModal(bookingData);
         });
 
         // ---------- Other existing UI functions (unchanged) ----------
