@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>THE NEX | THE SALON</title>
+    <title>THE NECX | THE SALON</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="data:application/manifest+json;base64,ewogICJuYW1lIjogIk5FWCBTYWxvbiIsCiAgInNob3J0X25hbWUiOiAiTkVYIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwMzAzMDMiLAogICJ0aGVtZV9jb2xvciI6ICIjRkYwMDJFIiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaHR0cHM6Ly9pLmliYi5jby9RdnZ3Y2ZWL2ltZy5wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJ0eXBlIjogImltYWdlL3BuZyIKICAgIH0KICBdCn0=">
@@ -607,6 +607,46 @@
             height: 30px;
             width: auto;
         }
+        /* New image modal styles */
+        #image-modal .bento-card {
+            max-width: 90vw;
+            max-height: 90vh;
+            width: auto;
+            padding: 1rem;
+        }
+        #image-modal img {
+            max-height: 80vh;
+            object-fit: contain;
+        }
+        /* Added loading spinner for payment modal */
+        #payment-loading {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+            border-radius: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        #payment-loading.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: #FF002E;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="antialiased pb-20 selection:bg-brand-red selection:text-white">
@@ -626,8 +666,8 @@
             <a href="#" class="flex flex-col items-start select-none group">
                 <div class="flex items-center gap-3">
                     <!-- LOGO URL from settings (will be updated via JS) -->
-                    <img id="navbar-logo" src="https://i.ibb.co/1pHWzNN/img.png" alt="NEX Logo" class="h-12 w-auto object-contain">
-                    <span class="text-3xl md:text-4xl font-heading text-white group-hover:text-brand-red transition-colors">THE NEX</span>
+                    <img id="navbar-logo" src="https://i.ibb.co/1pHWzNN/img.png" alt="NECX Logo" class="h-12 w-auto object-contain">
+                    <span class="text-3xl md:text-4xl font-heading text-white group-hover:text-brand-red transition-colors">THE NECX</span>
                 </div>
                 <span class="text-[0.6rem] font-bold text-brand-red tracking-[0.38em] uppercase pl-0.5 group-hover:text-white transition-colors duration-300">WHERE STYLE MEETS EDGE</span>
             </a>
@@ -710,7 +750,7 @@
                 </div>
                 <div class="grid gap-3" id="profile-contact-links">
                     <a href="tel:7057193228" class="flex items-center justify-between bg-white/5 hover:bg-brand-red text-white p-4 rounded-xl transition-all group border border-white/5 hover:border-brand-red"><span class="font-bold flex items-center gap-3"><i class="fa-solid fa-phone"></i> <span id="profile-phone">7057193228</span></span><i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i></a>
-                    <a href="https://wa.me/917057193228?text=Hi%20Shantanu!%20I%20want%20to%20book%20an%20appointment%20at%20NEX." target="_blank" class="flex items-center justify-between bg-white/5 hover:bg-[#25D366] text-white p-4 rounded-xl transition-all group border border-white/5 hover:border-[#25D366]" id="profile-wa"><span class="font-bold flex items-center gap-3"><i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp</span><i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i></a>
+                    <a href="https://wa.me/917057193228?text=Hi%20Shantanu!%20I%20want%20to%20book%20an%20appointment%20at%20NECX." target="_blank" class="flex items-center justify-between bg-white/5 hover:bg-[#25D366] text-white p-4 rounded-xl transition-all group border border-white/5 hover:border-[#25D366]" id="profile-wa"><span class="font-bold flex items-center gap-3"><i class="fa-brands fa-whatsapp text-xl"></i> WhatsApp</span><i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i></a>
                     <a href="https://instagram.com/vox.salon" target="_blank" class="flex items-center justify-between bg-white/5 hover:bg-gradient-to-r hover:from-purple-500 hover:to-pink-500 text-white p-4 rounded-xl transition-all group border border-white/5 hover:border-purple-500" id="profile-ig"><span class="font-bold flex items-center gap-3"><i class="fa-brands fa-instagram text-xl"></i> <span id="profile-ig-handle">@vox.salon</span></span><i class="fa-solid fa-arrow-right opacity-0 group-hover:opacity-100 transition-all"></i></a>
                     <div class="flex items-center justify-between bg-white/5 p-4 rounded-xl border border-white/5">
                         <span class="font-bold flex items-center gap-3"><i class="fa-solid fa-location-dot"></i> <span id="profile-address">Barshi Naka, Dharashiv 413501</span></span>
@@ -759,14 +799,14 @@
         <div class="bento-card w-full max-w-lg p-6 relative transform scale-90 transition-transform duration-300 border border-yellow-500/30 shadow-[0_0_80px_rgba(255,0,46,0.3)]" id="ticket-modal-card">
             <button onclick="closeTicketModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors z-10"><i class="fa-solid fa-xmark text-xl"></i></button>
             <div class="text-center mb-4">
-                <h3 class="text-3xl font-heading text-white tracking-wider">NEX SALON</h3>
+                <h3 class="text-3xl font-heading text-white tracking-wider">NECX SALON</h3>
                 <p class="text-[10px] text-brand-red tracking-[0.4em]">BOOKING CONFIRMATION</p>
             </div>
             <div id="ticket-content" class="relative">
                 <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 w-16 h-1 bg-brand-red rounded-full"></div>
                 <div class="flex justify-between items-center mb-4 border-b border-white/10 pb-2">
                     <span class="text-xs text-gray-400">TICKET</span>
-                    <span id="ticket-id" class="text-xs font-mono text-brand-red">#NEX2025</span>
+                    <span id="ticket-id" class="text-xs font-mono text-brand-red">#NECX2025</span>
                 </div>
                 <div class="space-y-2 text-sm">
                     <div class="ticket-field"><span class="text-gray-400">NAME</span><span id="ticket-name" class="font-bold text-white">Shantanu</span></div>
@@ -797,7 +837,7 @@
             <button onclick="closePrivacyModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
             <h2 class="text-4xl font-heading text-center text-white mb-6">PRIVACY POLICY</h2>
             <div class="space-y-4 text-gray-300 text-sm leading-relaxed max-h-[60vh] overflow-y-auto pr-2">
-                <p>Your privacy is important to us. This policy explains how we collect, use, and protect your personal information when you book an appointment at NEX Salon.</p>
+                <p>Your privacy is important to us. This policy explains how we collect, use, and protect your personal information when you book an appointment at NECX Salon.</p>
                 <p><strong>Information We Collect:</strong> Name, phone number, email address, appointment details, and any additional notes you provide.</p>
                 <p><strong>How We Use Your Information:</strong> To confirm appointments, send reminders, improve our services, and communicate with you. We do not share your data with third parties except as necessary to provide our services (e.g., email delivery via EmailJS).</p>
                 <p><strong>Data Security:</strong> We use Firebase Realtime Database with secure rules. However, no method of transmission over the Internet is 100% secure.</p>
@@ -809,10 +849,15 @@
         </div>
     </div>
 
-    <!-- PAYMENT MODAL (NEW) -->
+    <!-- PAYMENT MODAL (with added loading overlay) -->
     <div id="payment-modal" class="fixed inset-0 z-[600] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-md opacity-0 transition-opacity duration-300">
         <div class="bento-card w-full max-w-md p-8 relative transform scale-90 transition-transform duration-300 border border-white/10" id="payment-modal-card">
             <button onclick="closePaymentModal()" class="absolute top-4 right-4 text-gray-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <!-- Loading overlay (hidden by default) -->
+            <div id="payment-loading" class="hidden flex-col items-center justify-center absolute inset-0 bg-black/70 backdrop-blur-md rounded-2xl z-20">
+                <div class="loading-spinner mb-4"></div>
+                <p class="text-white font-heading text-lg">Processing...</p>
+            </div>
             <h3 class="text-3xl font-heading text-center text-white mb-6">COMPLETE BOOKING</h3>
             <div class="space-y-4 mb-6">
                 <div class="payment-option" id="pay-online-option" onclick="selectPaymentMethod('online')">
@@ -838,6 +883,14 @@
                 <div class="flex justify-between text-xl font-bold mt-3 pt-3 border-t border-white/10"><span>Total:</span> <span id="payment-total">₹0</span></div>
             </div>
             <button id="confirm-payment-btn" class="w-full bg-brand-red text-white font-heading text-xl py-4 rounded-xl hover:bg-white hover:text-black transition-all btn-shine" onclick="processPayment()">Confirm & Pay</button>
+        </div>
+    </div>
+
+    <!-- NEW IMAGE MODAL (for signature photos) -->
+    <div id="image-modal" class="fixed inset-0 z-[700] bg-black/90 hidden flex items-center justify-center p-4 backdrop-blur-md opacity-0 transition-opacity duration-300">
+        <div class="bento-card p-4 relative transform scale-90 transition-transform duration-300 border border-white/10" id="image-modal-card">
+            <button onclick="closeImageModal()" class="absolute top-2 right-2 text-gray-500 hover:text-white w-10 h-10 rounded-full flex items-center justify-center hover:bg-white/10 transition-colors z-10 bg-black/50"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <img id="modal-image" src="" alt="Signature" class="rounded-2xl max-w-full max-h-[80vh] object-contain">
         </div>
     </div>
 
@@ -891,25 +944,25 @@
         </div>
     </section>
 
-    <!-- SERVICES SECTION – REPLACED ICONS WITH PREMIUM IMAGES -->
+    <!-- SERVICES SECTION – REPLACED WITH NEW COHESIVE IMAGES + onerror fallback -->
     <section id="services" class="px-4 max-w-[1600px] mx-auto mb-20">
         <h2 class="text-center text-5xl font-heading mb-16 text-gradient-gold" data-aos="zoom-in">OUR <span class="text-gradient-red">SIGNATURE</span></h2>
         <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <!-- Haircut image card -->
-            <div onclick="openServiceModal('haircut')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#E1306C] hover:!shadow-[0_0_50px_rgba(225,48,108,0.3)]" data-aos="fade-up" data-aos-delay="0">
-                <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop" alt="Precision haircut" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500">
+            <!-- Barber tools - added onerror fallback -->
+            <div onclick="openImageModal('https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#E1306C] hover:!shadow-[0_0_50px_rgba(225,48,108,0.3)]" data-aos="fade-up" data-aos-delay="0">
+                <img src="https://images.unsplash.com/photo-1585747860715-2ba37e788b70?q=80&w=2074&auto=format&fit=crop" alt="Precision haircut" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'400\' viewBox=\'0 0 400 400\'%3E%3Crect width=\'400\' height=\'400\' fill=\'%23333\'/%3E%3Ctext x=\'50%%25\' y=\'50%%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23FF002E\' font-size=\'24\' font-family=\'Arial\'%3EImage%20unavailable%3C/text%3E%3C/svg%3E';">
             </div>
-            <!-- Beard sculpt image card -->
-            <div onclick="openServiceModal('beard')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#FF0000] hover:!shadow-[0_0_50px_rgba(255,0,0,0.3)]" data-aos="fade-up" data-aos-delay="100">
-                <img src="https://images.unsplash.com/photo-1621605815971-fbc98d665033?q=80&w=2070&auto=format&fit=crop" alt="Beard sculpting" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500">
+            <!-- Barber chair -->
+            <div onclick="openImageModal('https://images.unsplash.com/photo-1622287162716-f3ba644cf125?q=80&w=2070&auto=format&fit=crop')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#FF0000] hover:!shadow-[0_0_50px_rgba(255,0,0,0.3)]" data-aos="fade-up" data-aos-delay="100">
+                <img src="https://images.unsplash.com/photo-1622287162716-f3ba644cf125?q=80&w=2070&auto=format&fit=crop" alt="Barber chair" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'400\' viewBox=\'0 0 400 400\'%3E%3Crect width=\'400\' height=\'400\' fill=\'%23333\'/%3E%3Ctext x=\'50%%25\' y=\'50%%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23FF002E\' font-size=\'24\' font-family=\'Arial\'%3EImage%20unavailable%3C/text%3E%3C/svg%3E';">
             </div>
-            <!-- Hair color image card -->
-            <div onclick="openServiceModal('color')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#1877F2] hover:!shadow-[0_0_50px_rgba(24,119,242,0.3)]" data-aos="fade-up" data-aos-delay="200">
-                <img src="https://images.unsplash.com/photo-1560066984-138dadb4c035?q=80&w=1974&auto=format&fit=crop" alt="Hair coloring" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500">
+            <!-- Products on shelf -->
+            <div onclick="openImageModal('https://images.unsplash.com/photo-1559054663-e8d2322f3b7b?q=80&w=2070&auto=format&fit=crop')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#1877F2] hover:!shadow-[0_0_50px_rgba(24,119,242,0.3)]" data-aos="fade-up" data-aos-delay="200">
+                <img src="https://images.unsplash.com/photo-1559054663-e8d2322f3b7b?q=80&w=2070&auto=format&fit=crop" alt="Barber products" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'400\' viewBox=\'0 0 400 400\'%3E%3Crect width=\'400\' height=\'400\' fill=\'%23333\'/%3E%3Ctext x=\'50%%25\' y=\'50%%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23FF002E\' font-size=\'24\' font-family=\'Arial\'%3EImage%20unavailable%3C/text%3E%3C/svg%3E';">
             </div>
-            <!-- Royal groom image card -->
-            <div onclick="openServiceModal('styling')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#A855F7] hover:!shadow-[0_0_50px_rgba(168,85,247,0.3)]" data-aos="fade-up" data-aos-delay="300">
-                <img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?q=80&w=2070&auto=format&fit=crop" alt="Luxury grooming" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500">
+            <!-- Scissors close-up -->
+            <div onclick="openImageModal('https://images.unsplash.com/photo-1593702287946-05a433ff9e53?q=80&w=2070&auto=format&fit=crop')" class="bento-card overflow-hidden cursor-pointer group hover:!border-[#A855F7] hover:!shadow-[0_0_50px_rgba(168,85,247,0.3)]" data-aos="fade-up" data-aos-delay="300">
+                <img src="https://images.unsplash.com/photo-1593702287946-05a433ff9e53?q=80&w=2070&auto=format&fit=crop" alt="Scissors close-up" class="w-full h-full object-cover aspect-square group-hover:scale-110 transition-transform duration-500" onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'400\' viewBox=\'0 0 400 400\'%3E%3Crect width=\'400\' height=\'400\' fill=\'%23333\'/%3E%3Ctext x=\'50%%25\' y=\'50%%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' fill=\'%23FF002E\' font-size=\'24\' font-family=\'Arial\'%3EImage%20unavailable%3C/text%3E%3C/svg%3E';">
             </div>
         </div>
     </section>
@@ -939,7 +992,7 @@
         <a href="#" class="bg-white/5 w-14 h-14 rounded-full flex items-center justify-center text-2xl text-gray-400 hover:bg-brand-red hover:text-white transition-all border border-white/10 hover:border-transparent social-icon social-link" id="social-phone"><i class="fa-solid fa-phone"></i></a>
     </div>
 
-    <!-- CONTACT FORM – with staff selection (now at bottom), coupon, etc. -->
+    <!-- CONTACT FORM – with staff selection, coupon, etc. -->
     <section id="contact" class="px-4 max-w-4xl mx-auto mb-20" data-aos="zoom-in-up" data-aos-duration="1000">
         <div class="bento-card p-10 md:p-20 relative overflow-hidden border border-white/10">
             <div class="absolute top-0 right-0 w-64 h-64 bg-brand-red/20 rounded-full blur-[100px]"></div>
@@ -982,25 +1035,6 @@
                     </select>
                 </div>
                 <p id="service-error" class="text-brand-red text-[10px] font-bold mt-2 hidden text-left uppercase tracking-wider pl-2 animate-pulse">Please select a service</p>
-
-                <!-- Staff dropdown (hidden until toggle) – moved to bottom -->
-                <div id="staff-section" class="hidden space-y-2">
-                    <div class="custom-select" id="custom-staff-select">
-                        <div class="select-selected" id="staff-selected">
-                            <span id="staff-selected-text">PREFERRED STAFF (OPTIONAL)</span>
-                            <i class="fa-solid fa-chevron-down"></i>
-                        </div>
-                        <div class="select-items" id="staff-items">
-                            <div class="select-search">
-                                <input type="text" id="staff-search" placeholder="Search staff..." autocomplete="off">
-                            </div>
-                            <div id="staff-options-container"></div>
-                        </div>
-                        <select id="c-staff" class="hidden-select" name="staff">
-                            <option value="" selected>Anyone (no preference)</option>
-                        </select>
-                    </div>
-                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Custom Date Picker -->
@@ -1061,11 +1095,7 @@
                     <button type="button" id="toggle-coupon" class="text-sm text-brand-red underline">I have a coupon code</button>
                 </div>
 
-                <!-- Staff section (hidden initially) appears after toggles -->
-                <!-- Already defined above, but we keep it here for order; the actual div is above, but to maintain flow we leave it there; the staff-section is above the toggles? Actually we placed staff-section earlier, but we want it after toggles. Let's move the staff-section div here. We'll remove the earlier staff-section and place it after the toggles. -->
-                <!-- We need to restructure: staff-section should be after the toggles. So we will remove the staff-section from its old position and insert it here. But to avoid duplication, we'll delete the old staff-section and create a new one here. However, the old staff-section is above (line ~920). We'll delete that and put a new one here. But careful: the JavaScript references id="staff-section". So we'll keep the same ID. We'll move the entire staff-section div to this location. Let's do that: remove the staff-section from above and place it after the toggle row. We'll also remove the old toggle-staff button (which was above) and keep only the new row. -->
-
-                <!-- Actually, we already removed the old toggle-staff and toggle-coupon from above. Now we place staff-section here. -->
+                <!-- Staff section (hidden initially) -->
                 <div id="staff-section" class="hidden space-y-2">
                     <div class="custom-select" id="custom-staff-select">
                         <div class="select-selected" id="staff-selected">
@@ -1084,7 +1114,7 @@
                     </div>
                 </div>
 
-                <!-- Coupon section (hidden initially) -->
+                <!-- Coupon section (hidden initially) – IMPROVED VALIDATION -->
                 <div id="coupon-section" class="hidden space-y-2">
                     <div class="flex items-center gap-2">
                         <input type="text" id="coupon-code" placeholder="COUPON CODE" class="flex-1 bg-black/40 border border-white/10 p-4 rounded-2xl text-white outline-none focus:border-brand-red transition-all font-bold tracking-wider text-sm placeholder-gray-600">
@@ -1109,7 +1139,7 @@
     <footer class="text-center pt-20 pb-20 border-t border-white/5 bg-black relative" data-aos="fade-up">
         <div class="absolute inset-0 bg-gradient-to-t from-brand-red/5 to-transparent pointer-events-none"></div>
         <div class="max-w-4xl mx-auto px-4 relative z-10">
-            <h1 class="text-[15vw] font-heading text-white/5 leading-none select-none tracking-widest">THE NEX</h1>
+            <h1 class="text-[15vw] font-heading text-white/5 leading-none select-none tracking-widest">THE NECX</h1>
             <div class="-mt-6 md:-mt-16 relative z-10">
                 <p class="text-2xl md:text-3xl font-heading text-white mb-4 tracking-wide">THE ART OF <span class="text-gradient-red">GROOMING</span></p>
                 <p class="text-gray-500 text-xs md:text-sm max-w-lg mx-auto leading-relaxed tracking-wider font-light mb-4" id="footer-contact">
@@ -1124,7 +1154,7 @@
                 <div class="flex justify-center gap-6 mt-4 text-xs text-gray-600">
                     <button onclick="openPrivacyModal()" class="hover:text-brand-red transition-colors">Privacy Policy</button>
                 </div>
-                <p class="text-white/20 text-[10px] uppercase tracking-[0.4em] mt-12">© 2025 THE NEX HAIR SALON</p>
+                <p class="text-white/20 text-[10px] uppercase tracking-[0.4em] mt-12">© 2025 THE NECX HAIR SALON</p>
             </div>
         </div>
     </footer>
@@ -1152,7 +1182,6 @@
         const servicesRef = db.ref('services');
         const staffRef = db.ref('staff');
         const settingsRef = db.ref('settings');
-        const offersRef = db.ref('offers'); // legacy, not used now
         const couponsRef = db.ref('coupons'); // multiple coupons
         const rulesRef = db.ref('rules');
         const emailSettingsRef = db.ref('emailSettings');
@@ -1528,7 +1557,7 @@
             });
         }
 
-        // Toggle staff section – now handled by bottom button with id toggle-staff
+        // Toggle staff section
         document.getElementById('toggle-staff').addEventListener('click', function() {
             const staffSection = document.getElementById('staff-section');
             staffSection.classList.toggle('hidden');
@@ -1540,53 +1569,65 @@
             couponSection.classList.toggle('hidden');
         });
 
-        // Coupon apply logic – checks all active coupons and displays title
+        // 🔥 FIXED COUPON APPLICATION – uses stored usedCount and detailed error messages
         document.getElementById('apply-coupon').addEventListener('click', async () => {
-            const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+            const codeInput = document.getElementById('coupon-code').value.trim().toUpperCase();
             const discountInfo = document.getElementById('discount-info');
-            if (!code) {
-                discountInfo.classList.remove('hidden', 'text-green-500');
+            discountInfo.classList.add('hidden');
+            discountInfo.classList.remove('text-green-500', 'text-red-500');
+
+            if (!codeInput) {
+                discountInfo.classList.remove('hidden');
                 discountInfo.classList.add('text-red-500');
-                discountInfo.innerText = 'Invalid coupon';
-                return;
-            }
-            if (!currentServicePrice) {
-                discountInfo.classList.remove('hidden', 'text-green-500');
-                discountInfo.classList.add('text-red-500');
-                discountInfo.innerText = 'Invalid coupon';
+                discountInfo.innerText = 'Please enter a coupon code';
                 return;
             }
 
-            // Find matching coupon from coupons object
+            if (!currentServicePrice || currentServicePrice === 0) {
+                discountInfo.classList.remove('hidden');
+                discountInfo.classList.add('text-red-500');
+                discountInfo.innerText = 'Select a service first';
+                return;
+            }
+
+            // Check if coupons data loaded
+            if (Object.keys(coupons).length === 0) {
+                discountInfo.classList.remove('hidden');
+                discountInfo.classList.add('text-red-500');
+                discountInfo.innerText = 'Loading coupons, please try again in a moment';
+                return;
+            }
+
+            // Find matching coupon (case‑insensitive, codes stored uppercase in admin)
             let matchedCoupon = null;
             for (let key in coupons) {
                 const c = coupons[key];
-                if (c.active && c.code && c.code.toUpperCase() === code) {
+                if (c.active && c.code && c.code.toUpperCase() === codeInput) {
                     // Check expiry
                     if (c.expiryDate) {
                         const today = new Date().toISOString().split('T')[0];
-                        if (today > c.expiryDate) continue;
+                        if (today > c.expiryDate) continue; // expired
                     }
-                    // Check max uses
-                    const used = Object.values(bookings).filter(b => b.couponCode === c.code).length;
-                    if (c.maxUses > 0 && used >= c.maxUses) continue;
+                    // Check max uses using stored usedCount
+                    const usedCount = c.usedCount || 0;
+                    if (c.maxUses > 0 && usedCount >= c.maxUses) continue; // usage limit reached
                     matchedCoupon = c;
                     break;
                 }
             }
 
             if (!matchedCoupon) {
-                discountInfo.classList.remove('hidden', 'text-green-500');
+                discountInfo.classList.remove('hidden');
                 discountInfo.classList.add('text-red-500');
-                discountInfo.innerText = 'Invalid coupon';
+                discountInfo.innerText = 'Invalid, expired or fully used coupon';
                 return;
             }
 
-            // Valid coupon – display title and percent in green
+            // Valid coupon – apply discount
             currentDiscountPercent = matchedCoupon.percent || 0;
             appliedCouponCode = matchedCoupon.code;
             appliedCouponTitle = matchedCoupon.title;
-            discountInfo.classList.remove('hidden', 'text-red-500');
+            discountInfo.classList.remove('hidden');
             discountInfo.classList.add('text-green-500');
             discountInfo.innerText = `${matchedCoupon.title} – ${matchedCoupon.percent}% off applied`;
             updateTotalDisplay();
@@ -2040,7 +2081,7 @@
             const ticketContent = document.getElementById('ticket-content');
             html2canvas(ticketContent, { scale: 2, backgroundColor: '#0f0f0f' }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'NEX-ticket.png';
+                link.download = 'NECX-ticket.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
                 showToast('Ticket image downloaded!', 'success');
@@ -2048,7 +2089,7 @@
         };
 
         function generateBookingId() {
-            return 'NEX' + Math.floor(10000 + Math.random() * 90000);
+            return 'NECX' + Math.floor(10000 + Math.random() * 90000);
         }
 
         // Payment modal functions
@@ -2067,6 +2108,9 @@
             card.classList.add('scale-90');
             setTimeout(() => { modal.classList.add('hidden'); }, 300);
             selectedPaymentMethod = null;
+            // Hide loading overlay if visible
+            document.getElementById('payment-loading').classList.remove('show', 'flex');
+            document.getElementById('payment-loading').classList.add('hidden');
         }
 
         function openPaymentModal(bookingData) {
@@ -2080,6 +2124,9 @@
             document.getElementById('pay-online-option').classList.remove('selected');
             document.getElementById('pay-after-option').classList.remove('selected');
             document.getElementById('confirm-payment-btn').innerText = 'Confirm & Pay';
+            // Ensure loading overlay is hidden
+            document.getElementById('payment-loading').classList.remove('show', 'flex');
+            document.getElementById('payment-loading').classList.add('hidden');
 
             const modal = document.getElementById('payment-modal');
             const card = document.getElementById('payment-modal-card');
@@ -2089,6 +2136,27 @@
                 card.classList.remove('scale-90'); 
                 card.classList.add('scale-100'); 
             }, 10);
+        }
+
+        // Helper to simulate 2 sec loading and then create booking
+        async function simulateLoadingAndCreateBooking(bookingData, paymentMethod, paymentId = '') {
+            const loadingOverlay = document.getElementById('payment-loading');
+            loadingOverlay.classList.remove('hidden');
+            loadingOverlay.classList.add('flex', 'show');
+            // Disable confirm button
+            document.getElementById('confirm-payment-btn').disabled = true;
+            
+            // Wait 2 seconds
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            // Hide loading
+            loadingOverlay.classList.remove('show', 'flex');
+            loadingOverlay.classList.add('hidden');
+            document.getElementById('confirm-payment-btn').disabled = false;
+            
+            // Create booking
+            await createBooking(bookingData, paymentMethod, paymentId);
+            closePaymentModal();
         }
 
         // Process payment after method selection
@@ -2102,22 +2170,20 @@
             const bookingData = pendingBookingData;
 
             if (selectedPaymentMethod === 'after') {
-                // Create booking immediately
-                await createBooking(bookingData, 'after');
-                closePaymentModal();
+                // Show loading for 2 sec then create booking
+                await simulateLoadingAndCreateBooking(bookingData, 'after');
             } else if (selectedPaymentMethod === 'online') {
                 // Razorpay integration
                 const options = {
                     key: "rzp_live_your_key", // Replace with your Razorpay live key
                     amount: bookingData.finalPrice * 100,
                     currency: "INR",
-                    name: "NEX Salon",
+                    name: "NECX Salon",
                     description: `Booking: ${bookingData.serviceTitle}`,
                     image: settings.logo || "https://i.ibb.co/1pHWzNN/img.png",
                     handler: async function(response) {
-                        // Payment successful
-                        await createBooking(bookingData, 'online', response.razorpay_payment_id);
-                        closePaymentModal();
+                        // Payment successful – show 2 sec loading then create booking
+                        await simulateLoadingAndCreateBooking(bookingData, 'online', response.razorpay_payment_id);
                     },
                     prefill: {
                         name: bookingData.name,
@@ -2133,7 +2199,7 @@
 
         async function createBooking(bookingData, paymentMethod, paymentId = '') {
             try {
-                // Increment coupon usage if applied
+                // Increment coupon usage if applied – using transaction on the specific coupon node
                 if (bookingData.couponCode) {
                     const couponRef = db.ref('coupons').orderByChild('code').equalTo(bookingData.couponCode).limitToFirst(1);
                     const snapshot = await couponRef.once('value');
@@ -2445,6 +2511,29 @@
         window.closePrivacyModal = function() {
             const modal = document.getElementById('privacy-modal');
             const card = document.getElementById('privacy-modal-card');
+            modal.classList.add('opacity-0');
+            card.classList.remove('scale-100');
+            card.classList.add('scale-90');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        };
+
+        // New image modal functions
+        window.openImageModal = function(src) {
+            const modal = document.getElementById('image-modal');
+            const img = document.getElementById('modal-image');
+            const card = document.getElementById('image-modal-card');
+            img.src = src;
+            modal.classList.remove('hidden');
+            setTimeout(() => { 
+                modal.classList.remove('opacity-0'); 
+                card.classList.remove('scale-90'); 
+                card.classList.add('scale-100'); 
+            }, 10);
+        };
+
+        window.closeImageModal = function() {
+            const modal = document.getElementById('image-modal');
+            const card = document.getElementById('image-modal-card');
             modal.classList.add('opacity-0');
             card.classList.remove('scale-100');
             card.classList.add('scale-90');
